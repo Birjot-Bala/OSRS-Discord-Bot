@@ -1,0 +1,3 @@
+# Ignore environment variables and batch file
+*.env
+*.bat
