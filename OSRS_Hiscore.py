@@ -159,7 +159,7 @@ async def chance(ctx, droprate, actions=None):
         await ctx.send(chance_message)
 
 
-@bot.command(name='tracker', help='Uses the Wise Old Man API to track XP deltas.')
+@bot.command(name='tracker', help='Uses the Wise Old Man API to track XP gains. !tracker (period) (username). Periods can be day, week, month or year.'
 async def tracker(ctx, period, *args):
     username = ''
     tracker_message = ''
@@ -181,17 +181,19 @@ async def tracker(ctx, period, *args):
         delta_request = requests.get('https://wiseoldman.net/api/deltas?playerId={}&period={}'.format(player_ID,
                                                                                                       period))
         delta_request = delta_request.json()
-        for i in delta_request['data']:
-            gains = delta_request['data'][i]['experience']['delta']
+        for skill in delta_request['data']:
+            gains = delta_request['data'][skill]['experience']['gained']
             if gains > 0:
                 tracker_message = tracker_message + \
-                    f'\n{i.capitalize():<20s}{gains:n}'
+                    f'\n{skill.capitalize():<20s}{gains:n}'
+            if skill == "construction":
+                break
         if tracker_message == '':
-            tracker_message = 'No gains in the specified period.'
+            tracker_message = 'No gains in the specified period.'   
         else:
-            tracker_message = f'```{Skill:<20s}Experience```' + tracker_message
+            tracker_message = f'```{Skill:<20s}Experience```' + '```' + tracker_message + '```'
 
     await ctx.send(tracker_message)
 
-
+    
 bot.run(TOKEN)
