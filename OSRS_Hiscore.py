@@ -159,7 +159,7 @@ async def chance(ctx, droprate, actions=None):
         await ctx.send(chance_message)
 
 
-@bot.command(name='tracker', help='Uses the Wise Old Man API to track XP gains. !tracker (period) (username). Periods can be day, week, month or year.'
+@bot.command(name='tracker', help='Uses the Wise Old Man API to track XP gains. !tracker (period) (username). Periods can be day, week, month or year.')
 async def tracker(ctx, period, *args):
     username = ''
     tracker_message = ''
@@ -169,13 +169,12 @@ async def tracker(ctx, period, *args):
     # request user id from Wise Old Man API
     ID_request = requests.get(
         'https://wiseoldman.net/api/players/search?username=' + username)
-    response = ID_request.status_code
-    if response == 404:
+    ID_request = ID_request.json()
+    if ID_request == []:
         tracker_message = 'Player {} does not exist or OSRS Hiscores are down.'.format(
             username)
     else:
         # if player exists use the id to find the deltas for the specified period.
-        ID_request = ID_request.json()
         ID_request = ID_request[0]
         player_ID = ID_request['id']
         delta_request = requests.get('https://wiseoldman.net/api/deltas?playerId={}&period={}'.format(player_ID,
