@@ -1,3 +1,4 @@
+# OSRS_Hiscore.py
 
 import os
 import requests
@@ -16,6 +17,12 @@ regexPunc = re.compile('[%s]' % re.escape(string.punctuation))
 # acquiring the bot token from environment variables
 TOKEN = os.getenv('DISCORD_TOKEN')
 
+skill_name = ['Overall', 'Attack', 'Defence', 'Strength', 'Hitpoints', 'Ranged', 'Prayer',
+      'Magic', 'Cooking', 'Woodcutting', 'Fletching', 'Fishing', 'Firemaking', 'Crafting', 'Smithing',
+      'Mining', 'Herblore', 'Agility', 'Thieving', 'Slayer',
+      'Farming', 'Runecraft', 'Hunter', 'Construction']
+
+
 bot = commands.Bot(command_prefix='!')
 
 
@@ -28,6 +35,30 @@ def fraction2Float(frac):
     frac = float(frac[0])/float(frac[1])
     return frac
 
+def formatUsername(args):
+    # format username to string
+    username = ''
+    for arg in args:
+        username = username + ' ' + str(arg)
+    return username
+
+def lookupHiscores(playerName):
+    request = requests.get(
+        'http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player=' + playerName)
+    return request
+
+def getResponse(request):
+    response = request.status_code
+    if response == 404:
+        return False
+    else:
+        try:
+            message = request.json()
+            return message
+        except ValueError:
+            return request.text #return raw text
+
+        
 
 @bot.event
 async def on_ready():
@@ -37,27 +68,14 @@ async def on_ready():
 # !hiscore X, Y posts X skill of Y account
 @bot.command(name='hiscore', help='Posts character hiscores')
 async def hiscore(ctx, oneSkill, *args):
-    username = ''
-    for arg in args:
-        username = username + ' ' + str(arg)
+    username = formatUsername(args)
 # request data from OSRS Hiscores
-    request = requests.get(
-        'http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player=' + username)
-    response = request.status_code
-    if response == 404:
-        hiscore_message = 'Player {} does not exist or OSRS Hiscores are down.'.format(
-            username)
-
+    request = lookupHiscores(username)
+    response = getResponse(request)
+    if response == False:
+        hiscore_message = f'Player {username} does not exist or OSRS Hiscores are down.'
     else:
-        raw = request.text
-
-        skill_name = ['Overall', 'Attack', 'Defence', 'Strength', 'Hitpoints', 'Ranged', 'Prayer',
-                      'Magic', 'Cooking', 'Woodcutting', 'Fletching', 'Fishing', 'Firemaking', 'Crafting', 'Smithing',
-                      'Mining', 'Herblore', 'Agility', 'Thieving', 'Slayer',
-                      'Farming', 'Runecraft', 'Hunter', 'Construction']
-
-    # format raw text
-        skills = re.findall(r'(.*,.*,.*)', raw)
+        skills = re.findall(r'(.*,.*,.*)', response)
         skills = [i.split(',') for i in skills]
         skill_dict = dict(zip(skill_name, skills))
         hiscore_message = '```{:<15s}{:>10s}{:>15s}```'.format(
@@ -134,10 +152,11 @@ async def wiki(ctx, subject, *args):
         subject = subject + '_' + arg
     wiki_message = 'https://oldschool.runescape.wiki/w/' + subject
     response = requests.get(wiki_message)
-    if response.status_code == 200:  # checks to see if page exists
-        await ctx.send(wiki_message)
-    elif response.status_code == 404:
+    
+    if getResponse(response) == False:
         await ctx.send('OSRS Wiki article with that title does not exist.')
+    else:
+        await ctx.send(wiki_message)
 
 
 @bot.command(name='chance', help='Calculates the percent chance of getting a drop within a set number of actions.')
@@ -165,27 +184,16 @@ async def chance(ctx, droprate, actions=None):
 
 @bot.command(name='tracker', help='Uses the Wise Old Man API to track XP gains. !tracker (period) (username). Periods can be day, week, month or year.')
 async def tracker(ctx, period, *args):
-    username = ''
     tracker_message = ''
     Skill = 'Skill'
-    for arg in args:
-        username = username + ' ' + str(arg)
-    # request user id from Wise Old Man API
-    ID_request = requests.get(
-        'https://wiseoldman.net/api/players/search?username=' + username)
-    ID_request = ID_request.json()
-    if ID_request == []:
-        tracker_message = 'Player {} does not exist on Wise Old Man XP Tracker.'.format(
-            username)
+    username = formatUsername(args)
+    delta_request = requests.get(f'https://wiseoldman.net/api/players/username/{username}/gained?period={period}')
+    delta_response = getResponse(delta_request)
+    if 'message' in delta_response:
+        tracker_message = f'Player {username} does not exist on Wise Old Man XP Tracker.'
     else:
-        # if player exists use the id to find the deltas for the specified period.
-        ID_request = ID_request[0]
-        player_ID = ID_request['id']
-        delta_request = requests.get('https://wiseoldman.net/api/deltas?playerId={}&period={}'.format(player_ID,
-                                                                                                      period))
-        delta_request = delta_request.json()
-        for skill in delta_request['data']:
-            gains = delta_request['data'][skill]['experience']['gained']
+        for skill in delta_response['data']:
+            gains = delta_response['data'][skill]['experience']['gained']
             if gains > 0:
                 tracker_message = tracker_message + \
                     f'\n{skill.capitalize():<20s}{gains:n}'
