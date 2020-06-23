@@ -31,6 +31,7 @@ def formatSearch(s):
     return regexPunc.sub('', s)
 
 def fraction2Float(frac):
+    # convert fractions to floats
     frac = frac.split('/')
     frac = float(frac[0])/float(frac[1])
     return frac
@@ -48,6 +49,7 @@ def lookupHiscores(playerName):
     return request
 
 def getResponse(request):
+    # handle requests and acquire response
     response = request.status_code
     if response == 404:
         return False
@@ -58,6 +60,22 @@ def getResponse(request):
         except ValueError:
             return request.text #return raw text
 
+def formatHiscore(username, oneSkill, skill_name, response):
+    # format the response from OSRS Hiscore API
+    skills = re.findall(r'(.*,.*,.*)', response)
+    skills = [i.split(',') for i in skills]
+    skill_dict = dict(zip(skill_name, skills))
+    hiscore_message = f'```{username:<15s}{"Level":>10s}{"XP":>15s}```' + '```'
+    if oneSkill == 'All':
+        for s in skill_dict:
+            hiscore_message = hiscore_message +\
+                 f'\n{s:<15s}{skill_dict[s][1]:>10s}{skill_dict[s][2]:>15s}'
+        hiscore_message = hiscore_message + '```'
+    else:  
+        hiscore_message = hiscore_message +\
+             f'\n{oneSkill:<15s}{skill_dict[oneSkill][1]:>10s}{skill_dict[oneSkill][2]:>15s}' + '```'
+    return hiscore_message
+
         
 
 @bot.event
@@ -65,36 +83,21 @@ async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
 
 
-# !hiscore X, Y posts X skill of Y account
-@bot.command(name='hiscore', help='Posts character hiscores')
+# !hiscore {skill} {username}
+@bot.command(name='hiscore', help='Posts player hiscores.')
 async def hiscore(ctx, oneSkill, *args):
     username = formatUsername(args)
-# request data from OSRS Hiscores
-    request = lookupHiscores(username)
-    response = getResponse(request)
-    if response == False:
-        hiscore_message = f'Player {username} does not exist or OSRS Hiscores are down.'
+    oneSkill = oneSkill.capitalize()
+    if username == '' or oneSkill not in [skill_name, 'All']:
+        hiscore_message = 'Please enter a skill or all before the username.'
     else:
-        skills = re.findall(r'(.*,.*,.*)', response)
-        skills = [i.split(',') for i in skills]
-        skill_dict = dict(zip(skill_name, skills))
-        hiscore_message = '```{:<15s}{:>10s}{:>15s}```'.format(
-            username, 'Level', 'XP') + '```'
-
-        if oneSkill == 'all':
-            for s in skill_dict:
-                hiscore_message = hiscore_message + \
-                    '\n{:<15s}{:>10s}{:>15s}'.format(
-                        s, skill_dict[s][1], skill_dict[s][2])
-            hiscore_message = hiscore_message + '```'
+# request data from OSRS Hiscores
+        request = lookupHiscores(username)
+        response = getResponse(request)
+        if response == False:
+            hiscore_message = f'Player {username} does not exist or OSRS Hiscores are down.'
         else:
-            if oneSkill.capitalize() in skill_dict.keys():
-                oneSkill = oneSkill.capitalize()
-                hiscore_message = hiscore_message + '\n{:<15s}{:>10s}{:>15s}'.format(
-                    oneSkill, skill_dict[oneSkill][1], skill_dict[oneSkill][2]) + '```'
-            else:
-                hiscore_message = '{} is not a skill.'.format(oneSkill)
-
+            hiscore_message = formatHiscore(username, oneSkill, skill_name,response)
     await ctx.send(hiscore_message)
 
 
@@ -171,14 +174,13 @@ async def chance(ctx, droprate, actions=None):
     except ValueError:
         await ctx.send('Please enter drop rates in fractions or decimals and actions in integers.')
     except TypeError:
-        await ctx.send('Please enter the number of actions. ')
+        await ctx.send('Please enter the number of actions.')
 
     if type(droprate) == float and type(actions) == int:
         noDrop = (1 - droprate)**actions
         yesDrop = 1 - noDrop
         percent = yesDrop * 100
-        chance_message = '{:.2f} percent chance of getting getting the drop within {} actions.'.format(
-            percent, actions)
+        chance_message = f'{percent:.2f} percent chance of getting getting the drop within {actions} actions.'
         await ctx.send(chance_message)
 
 
