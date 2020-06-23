@@ -23,6 +23,11 @@ def formatSearch(s):
     s = s.lower()
     return regexPunc.sub('', s)
 
+def fraction2Float(frac):
+    frac = frac.split('/')
+    frac = float(frac[0])/float(frac[1])
+    return frac
+
 
 @bot.event
 async def on_ready():
@@ -138,9 +143,8 @@ async def wiki(ctx, subject, *args):
 @bot.command(name='chance', help='Calculates the percent chance of getting a drop within a set number of actions.')
 #!chance X, Y calculates the chance of hitting the X drop rate in Y actions
 async def chance(ctx, droprate, actions=None):
-    if droprate.find('/') != -1:  # if decimal given convert to float
-        droprate = droprate.split('/')
-        droprate = float(droprate[0])/float(droprate[1])
+    if droprate.find('/') != -1:  # if fraction given convert to float
+        droprate = fraction2Float(droprate)
 
     try:
         droprate = float(droprate)
@@ -171,7 +175,7 @@ async def tracker(ctx, period, *args):
         'https://wiseoldman.net/api/players/search?username=' + username)
     ID_request = ID_request.json()
     if ID_request == []:
-        tracker_message = 'Player {} does not exist or OSRS Hiscores are down.'.format(
+        tracker_message = 'Player {} does not exist on Wise Old Man XP Tracker.'.format(
             username)
     else:
         # if player exists use the id to find the deltas for the specified period.
