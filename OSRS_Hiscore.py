@@ -5,6 +5,7 @@ import requests
 import re
 import string
 import locale
+import functions as f
 
 
 from dotenv import load_dotenv
@@ -12,7 +13,7 @@ from discord.ext import commands
 
 locale.setlocale(locale.LC_ALL, '')
 load_dotenv()
-regexPunc = re.compile('[%s]' % re.escape(string.punctuation))
+
 
 # acquiring the bot token from environment variables
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -24,58 +25,6 @@ skill_name = ['Overall', 'Attack', 'Defence', 'Strength', 'Hitpoints', 'Ranged',
 
 
 bot = commands.Bot(command_prefix='!')
-
-
-def formatSearch(s):
-    s = s.lower()
-    return regexPunc.sub('', s)
-
-def fraction2Float(frac):
-    # convert fractions to floats
-    frac = frac.split('/')
-    frac = float(frac[0])/float(frac[1])
-    return frac
-
-def formatUsername(args):
-    # format username to string
-    username = ''
-    for arg in args:
-        username = username + ' ' + str(arg)
-    return username
-
-def lookupHiscores(playerName):
-    request = requests.get(
-        'http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player=' + playerName)
-    return request
-
-def getResponse(request):
-    # handle requests and acquire response
-    response = request.status_code
-    if response == 404:
-        return False
-    else:
-        try:
-            message = request.json()
-            return message
-        except ValueError:
-            return request.text #return raw text
-
-def formatHiscore(username, oneSkill, skill_name, response):
-    # format the response from OSRS Hiscore API
-    skills = re.findall(r'(.*,.*,.*)', response)
-    skills = [i.split(',') for i in skills]
-    skill_dict = dict(zip(skill_name, skills))
-    hiscore_message = f'```{username:<15s}{"Level":>10s}{"XP":>15s}```' + '```'
-    if oneSkill == 'All':
-        for s in skill_dict:
-            hiscore_message = hiscore_message +\
-                 f'\n{s:<15s}{skill_dict[s][1]:>10s}{skill_dict[s][2]:>15s}'
-        hiscore_message = hiscore_message + '```'
-    else:  
-        hiscore_message = hiscore_message +\
-             f'\n{oneSkill:<15s}{skill_dict[oneSkill][1]:>10s}{skill_dict[oneSkill][2]:>15s}' + '```'
-    return hiscore_message
-
         
 
 @bot.event
@@ -86,18 +35,18 @@ async def on_ready():
 # !hiscore {skill} {username}
 @bot.command(name='hiscore', help='Posts player hiscores.')
 async def hiscore(ctx, oneSkill, *args):
-    username = formatUsername(args)
+    username = f.formatUsername(args)
     oneSkill = oneSkill.capitalize()
     if username == '' or oneSkill not in [skill_name, 'All']:
         hiscore_message = 'Please enter a skill or all before the username.'
     else:
 # request data from OSRS Hiscores
-        request = lookupHiscores(username)
-        response = getResponse(request)
+        request = f.lookupHiscores(username)
+        response = f.getResponse(request)
         if response == False:
             hiscore_message = f'Player {username} does not exist or OSRS Hiscores are down.'
         else:
-            hiscore_message = formatHiscore(username, oneSkill, skill_name,response)
+            hiscore_message = f.formatHiscore(username, oneSkill, skill_name,response)
     await ctx.send(hiscore_message)
 
 
@@ -119,7 +68,7 @@ async def ge(ctx, item, *args):
         ge_lookup = ge_lookup.json()
 
         for i in itemrequest:  # search for item in item list up to first 10 results
-            if formatSearch(item) in formatSearch(itemrequest[i]['name']):
+            if f.formatSearch(item) in f.formatSearch(itemrequest[i]['name']):
                 if itemrequest[i]['noted'] == False and itemrequest[i]['placeholder'] == False and itemrequest[i]['tradeable_on_ge'] == True:
                     counter += 1
                     if counter < 11:
@@ -156,7 +105,7 @@ async def wiki(ctx, subject, *args):
     wiki_message = 'https://oldschool.runescape.wiki/w/' + subject
     response = requests.get(wiki_message)
     
-    if getResponse(response) == False:
+    if f.getResponse(response) == False:
         await ctx.send('OSRS Wiki article with that title does not exist.')
     else:
         await ctx.send(wiki_message)
@@ -166,7 +115,7 @@ async def wiki(ctx, subject, *args):
 #!chance X, Y calculates the chance of hitting the X drop rate in Y actions
 async def chance(ctx, droprate, actions=None):
     if droprate.find('/') != -1:  # if fraction given convert to float
-        droprate = fraction2Float(droprate)
+        droprate = f.fraction2Float(droprate)
 
     try:
         droprate = float(droprate)
@@ -188,9 +137,9 @@ async def chance(ctx, droprate, actions=None):
 async def tracker(ctx, period, *args):
     tracker_message = ''
     Skill = 'Skill'
-    username = formatUsername(args)
+    username = f.formatUsername(args)
     delta_request = requests.get(f'https://wiseoldman.net/api/players/username/{username}/gained?period={period}')
-    delta_response = getResponse(delta_request)
+    delta_response = f.getResponse(delta_request)
     if 'message' in delta_response:
         tracker_message = f'Player {username} does not exist on Wise Old Man XP Tracker.'
     else:
