@@ -6,6 +6,7 @@ import re
 import string
 import locale
 import functions as f
+from functions import API_Request
 
 
 from dotenv import load_dotenv
@@ -23,6 +24,8 @@ skill_name = ['Overall', 'Attack', 'Defence', 'Strength', 'Hitpoints', 'Ranged',
       'Mining', 'Herblore', 'Agility', 'Thieving', 'Slayer',
       'Farming', 'Runecraft', 'Hunter', 'Construction']
 
+WiseOldMan = API_Request('https://wiseoldman.net/api')
+Hiscores = API_Request('http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player=')
 
 bot = commands.Bot(command_prefix='!')
         
@@ -41,8 +44,7 @@ async def hiscore(ctx, oneSkill, *args):
         hiscore_message = 'Please enter a skill or all before the username.'
     else:
 # request data from OSRS Hiscores
-        request = f.lookupHiscores(username)
-        response = f.getResponse(request)
+        response = Hiscores.GET(username)
         if response == False:
             hiscore_message = f'Player {username} does not exist or OSRS Hiscores are down.'
         else:
@@ -138,8 +140,7 @@ async def tracker(ctx, period, *args):
     tracker_message = ''
     Skill = 'Skill'
     username = f.formatUsername(args)
-    delta_request = requests.get(f'https://wiseoldman.net/api/players/username/{username}/gained?period={period}')
-    delta_response = f.getResponse(delta_request)
+    delta_response = WiseOldMan.GET(f'/players/username/{username}/gained?period={period}')
     if 'message' in delta_response:
         tracker_message = f'Player {username} does not exist on Wise Old Man XP Tracker.'
     else:

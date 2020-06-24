@@ -9,6 +9,11 @@ def formatSearch(s):
     s = s.lower()
     return regexPunc.sub('', s)
 
+def splitText(regex, delimiter, text):
+    outputList = re.findall(regex, text)
+    outputList = [i.split(delimiter) for i in outputList]
+    return outputList
+
 def fraction2Float(frac):
     # convert fractions to floats
     frac = frac.split('/')
@@ -41,8 +46,7 @@ def getResponse(request):
 
 def formatHiscore(username, oneSkill, skill_name, response):
     # format the response from OSRS Hiscore API
-    skills = re.findall(r'(.*,.*,.*)', response)
-    skills = [i.split(',') for i in skills]
+    skills = splitText(r'(.*,.*,.*)', ',', response)
     skill_dict = dict(zip(skill_name, skills))
     hiscore_message = f'```{username:<15s}{"Level":>10s}{"XP":>15s}```' + '```'
     if oneSkill == 'All':
@@ -54,3 +58,13 @@ def formatHiscore(username, oneSkill, skill_name, response):
         hiscore_message = hiscore_message +\
              f'\n{oneSkill:<15s}{skill_dict[oneSkill][1]:>10s}{skill_dict[oneSkill][2]:>15s}' + '```'
     return hiscore_message
+
+class API_Request:
+    def __init__(self, base_url):
+        self.base_url = base_url
+
+    def GET(self, url):
+        request_url = self.base_url + url
+        request = requests.get(request_url)
+        response = getResponse(request)
+        return response
