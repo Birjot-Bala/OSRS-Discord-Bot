@@ -4,6 +4,7 @@ import pytest
 import requests
 import string
 import functions as f
+
 from functions import API_Request
 
 @pytest.fixture
@@ -13,6 +14,10 @@ def falseRequest():
 @pytest.fixture
 def trueRequest():
     return requests.get('https://api.publicapis.org/health')
+
+@pytest.fixture
+def errorRequest():
+    return requests.get('Erorr')
 
 @pytest.fixture
 def hiscoreRequest():
@@ -36,6 +41,11 @@ def test_getResponse_False(falseRequest):
 def test_getResponse_True(trueRequest):
     response = f.getResponse(trueRequest)
     assert isinstance(response, dict) == True
+
+# def test_getResponse_Error(errorRequest):
+#     with pytest.raises():
+#         f.getResponse(errorRequest)
+    
 
 def test_API_Request_Class():
     testAPI = API_Request('https://api.publicapis.org')
