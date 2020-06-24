@@ -45,7 +45,7 @@ async def hiscore(ctx, oneSkill, *args):
     else:
 # request data from OSRS Hiscores
         response = Hiscores.GET(username)
-        if response == False:
+        if response == 404:
             hiscore_message = f'Player {username} does not exist or OSRS Hiscores are down.'
         else:
             hiscore_message = f.formatHiscore(username, oneSkill, skill_name,response)
@@ -107,7 +107,7 @@ async def wiki(ctx, subject, *args):
     wiki_message = 'https://oldschool.runescape.wiki/w/' + subject
     response = requests.get(wiki_message)
     
-    if f.getResponse(response) == False:
+    if f.getResponse(response) == 404:
         await ctx.send('OSRS Wiki article with that title does not exist.')
     else:
         await ctx.send(wiki_message)

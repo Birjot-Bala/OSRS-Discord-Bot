@@ -32,11 +32,12 @@ def lookupHiscores(playerName):
         'http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player=' + playerName)
     return request
 
-def getResponse(request):
+def getResponse(target_url):
     # handle requests and acquire response
+    request = requests.get(target_url)
     response = request.status_code
     if response == 404:
-        return False
+        return response
     else:
         try:
             message = request.json()
@@ -65,6 +66,5 @@ class API_Request:
 
     def GET(self, url):
         request_url = self.base_url + url
-        request = requests.get(request_url)
-        response = getResponse(request)
+        response = getResponse(request_url)
         return response

@@ -7,24 +7,25 @@ import functions as f
 
 from functions import API_Request
 
-@pytest.fixture
-def falseRequest():
-    return requests.get('http://google.ca/404')
+class MockAPI:
+    def __init__(self, requests_mock):
+        self.mock_base_url = requests_mock.get('https://test.com')
+        self.mock_404_url = requests_mock.get('https://test.com/404', text='Not Found', status_code=404)
+        self.mock_json_url = requests_mock.get('https://test.com/json', json= {'abc': 'def'})
+        self.mock_text_url = requests_mock.get('https://test.com/text', text='resp')
 
 @pytest.fixture
-def trueRequest():
-    return requests.get('https://api.publicapis.org/health')
+def test_API_Request_Object(requests_mock):
+    requests_mock.get('https://test.com')
+    return API_Request('https://test.com')
 
 @pytest.fixture
-def errorRequest():
-    return requests.get('Erorr')
-
-@pytest.fixture
-def hiscoreRequest():
-    return requests.get('http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player=Bruhjeezy')
+def mockAPI(requests_mock): 
+    return MockAPI(requests_mock)
 
 def test_fraction2Float():
     assert f.fraction2Float('1/2') == 0.5
+    assert f.fraction2Float('1.0/2.0') == 0.5
 
 def test_raises_exception_on_non_fraction_arguments():
     with pytest.raises(ValueError):
@@ -34,24 +35,27 @@ def test_splitText():
     outputList = f.splitText(r'(.,.,.)', ',', '1,3,4 1,5,6 7,3,4')
     assert outputList == [['1','3','4'],['1','5','6'],['7','3','4']]    
 
-def test_getResponse_False(falseRequest):   
-    response = f.getResponse(falseRequest)
-    assert response == False
+def test_getResponse_False(requests_mock):
+    requests_mock.get('https://test.com/404', text='Not Found', status_code=404)  
+    response = f.getResponse('https://test.com/404')
+    assert 404 == response
 
-def test_getResponse_True(trueRequest):
-    response = f.getResponse(trueRequest)
-    assert isinstance(response, dict) == True
-
-# def test_getResponse_Error(errorRequest):
-#     with pytest.raises():
-#         f.getResponse(errorRequest)
+def test_getResponse_True(requests_mock):
+    requests_mock.get('https://test.com/json', json= {'abc': 'def'})
+    response = f.getResponse('https://test.com/json')
+    assert response == {'abc': 'def'}
     
+def test_API_Request_Class(test_API_Request_Object, mockAPI):
+    assert test_API_Request_Object.GET('/404') == 404
+    assert test_API_Request_Object.GET('/json') == {'abc': 'def'}
+    assert test_API_Request_Object.GET('/text') == 'resp'
 
-def test_API_Request_Class():
-    testAPI = API_Request('https://api.publicapis.org')
-    response = testAPI.GET('/health')
-    assert testAPI.base_url == 'https://api.publicapis.org'
-    assert isinstance(response, dict) == True 
+
+# def test_API_Request_Class():
+#     testAPI = API_Request('https://api.publicapis.org')
+#     response = testAPI.GET('/health')
+#     assert testAPI.base_url == 'https://api.publicapis.org'
+#     assert isinstance(response, dict) == True 
 
 # def test_formatHiscore(hiscoreRequest):
 
