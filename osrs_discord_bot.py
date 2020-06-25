@@ -105,9 +105,7 @@ async def wiki(ctx, subject, *args):
     for arg in args:
         subject = subject + '_' + arg
     wiki_message = 'https://oldschool.runescape.wiki/w/' + subject
-    response = requests.get(wiki_message)
-    
-    if f.getResponse(response) == 404:
+    if f.getResponse(wiki_message) == 404:
         await ctx.send('OSRS Wiki article with that title does not exist.')
     else:
         await ctx.send(wiki_message)
