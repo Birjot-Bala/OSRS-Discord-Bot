@@ -65,7 +65,7 @@ async def ge(ctx, item, *args):
         if foundItems == {}:
             ge_message = 'No item named' + ' "' + item + '" ' + 'found on GE.'
         else:
-            ge_message_header = f.formatDiscord(f'{"Item":<40s}{"Buy Order":>15s}{"Sell":>15s}{"Margin":>15s}')
+            ge_message_header = f.formatDiscord(f'{"Item":<40s}{"Offer Price":>15s}{"Sell Price":>15s}{"Margin":>15s}')
             ge_message_body = ''
             itemPrices = f.searchPrice(foundItems, ExchangeURL)
             for key in itemPrices:
