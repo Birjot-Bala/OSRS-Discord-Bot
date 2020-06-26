@@ -1,8 +1,9 @@
 import requests
 import re
 import string
+from osrsbox import items_api
 
-
+all_db_items = items_api.load()
 regexPunc = re.compile('[%s]' % re.escape(string.punctuation))
 
 def formatSearch(s):
@@ -20,18 +21,6 @@ def fraction2Float(frac):
     frac = float(frac[0])/float(frac[1])
     return frac
 
-def formatUsername(args):
-    # format username to string
-    username = ''
-    for arg in args:
-        username = username + ' ' + str(arg)
-    return username
-
-def lookupHiscores(playerName):
-    request = requests.get(
-        'http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player=' + playerName)
-    return request
-
 def getResponse(target_url):
     # handle requests and acquire response
     request = requests.get(target_url)
@@ -45,20 +34,51 @@ def getResponse(target_url):
         except ValueError:
             return request.text #return raw text
 
+def formatDiscord(message):
+    # format message for discord
+    formMessage = '```' + message + '```'
+    return formMessage
+
 def formatHiscore(username, oneSkill, skill_name, response):
     # format the response from OSRS Hiscore API
     skills = splitText(r'(.*,.*,.*)', ',', response)
     skill_dict = dict(zip(skill_name, skills))
-    hiscore_message = f'```{username:<15s}{"Level":>10s}{"XP":>15s}```' + '```'
+    hiscore_message_header = formatDiscord(f'{username:<15s}{"Level":>10s}{"XP":>15s}')
+    hiscore_message_body = ''
     if oneSkill == 'All':
         for s in skill_dict:
-            hiscore_message = hiscore_message +\
+            hiscore_message_body = hiscore_message_body +\
                  f'\n{s:<15s}{skill_dict[s][1]:>10s}{skill_dict[s][2]:>15s}'
-        hiscore_message = hiscore_message + '```'
     else:  
-        hiscore_message = hiscore_message +\
-             f'\n{oneSkill:<15s}{skill_dict[oneSkill][1]:>10s}{skill_dict[oneSkill][2]:>15s}' + '```'
+        hiscore_message_body = hiscore_message_body +\
+             f'\n{oneSkill:<15s}{skill_dict[oneSkill][1]:>10s}{skill_dict[oneSkill][2]:>15s}'
+    hiscore_message = hiscore_message_header + formatDiscord(hiscore_message_body)
     return hiscore_message
+
+def searchItems(query, num):
+    # search osrsbox items list for query
+    itemDict = {}
+    counter = 0
+    for item in all_db_items:
+        if query in item.name:
+            itemDict[str(item.id)] = item.name
+            counter += 1
+            if counter == num:
+                break
+    return itemDict 
+
+def searchPrice(itemDict, ExchangeURL):
+    # search prices using OSBuddy Exchange
+    ge_prices = getResponse(ExchangeURL)
+    for key in itemDict:
+        try:
+            buyPrice, sellPrice = ge_prices[key]['buy_average'], ge_prices[key]['sell_average']
+            margin = buyPrice - sellPrice
+        except KeyError:
+            buyPrice, sellPrice, margin = 'N/A', 'N/A', 'N/A'
+        itemDict[key] = [itemDict[key], buyPrice, sellPrice, margin]
+    return itemDict
+
 
 class API_Request:
     def __init__(self, base_url):

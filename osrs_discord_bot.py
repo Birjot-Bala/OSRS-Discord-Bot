@@ -8,7 +8,6 @@ import locale
 import functions as f
 from functions import API_Request
 
-
 from dotenv import load_dotenv
 from discord.ext import commands
 
@@ -38,7 +37,7 @@ async def on_ready():
 # !hiscore {skill} {username}
 @bot.command(name='hiscore', help='Posts player hiscores.')
 async def hiscore(ctx, oneSkill, *args):
-    username = f.formatUsername(args)
+    username = ' '.join(args)
     oneSkill = oneSkill.capitalize()
     if username == '' or oneSkill not in [skill_name, 'All']:
         hiscore_message = 'Please enter a skill or all before the username.'
@@ -55,13 +54,12 @@ async def hiscore(ctx, oneSkill, *args):
 # !ge X posts GE price information of first 10 items that include X
 @bot.command(name='ge', help='Posts GE price of items')
 async def ge(ctx, item, *args):
-    for arg in args:
-        item = item + ' ' + arg
+    item = item + ' ' + ' '.join(args)
     if len(item) < 3:
         await ctx.send('Please be more specific.')
     else:
-        ge_message = '```{:<40s}{:>15s}{:>15s}{:>15s}```'.format(
-            'Item', 'Buy Order', 'Sell', 'Margin') + '```'
+        ge_message_header = f.formatDiscord(f'{"Item":<40s}{"Buy Order":>15s}{"Sell":>15s}{"Margin":>15s}')
+        ge_message_body = ''
         counter = 0
         itemrequest = requests.get(
             'https://www.osrsbox.com/osrsbox-db/items-complete.json')
@@ -81,29 +79,27 @@ async def ge(ctx, item, *args):
                             buyPrice = f'{buyPrice:n}'
                             sellPrice = f'{sellPrice:n}'
                             margin = f'{margin:n}'
-                            ge_message = ge_message + '\n{:<40s}{:>15s}{:>15s}{:>15s}'.format(
-                                itemrequest[i]['name'], str(buyPrice), str(sellPrice), str(margin))
+                            ge_message_body = ge_message_body + \
+                                f'\n{itemrequest[i]["name"]:<40s}{str(buyPrice):>15s}{str(sellPrice):>15s}{str(margin):>15s}'
                         except KeyError:
-                            ge_message = ge_message + \
-                                '\n{:<40s}{:>15s}{:>15s}{:>15s}'.format(
-                                    itemrequest[i]['name'], 'N/A', 'N/A', 'N/A')
+                            ge_message_body = ge_message_body + \
+                                f'\n{itemrequest[i]["name"]:<40s}{"N/A":>15s}{"N/A":>15s}{"N/A":>15s}'
                     elif counter == 11:
-                        ge_message = ge_message + \
+                        ge_message_body = ge_message_body + \
                             '\n\nShowing first 10 results only. Please refine search if item is not listed.'
                         break
 
         if counter == 0:  # if no results found
             await ctx.send('No item found with ' + '"' + item + '" ' + 'name on GE.')
         else:
-            ge_message = ge_message + '```'
+            ge_message = ge_message_header + f.formatDiscord(ge_message_body)
             await ctx.send(ge_message)
 
 
 # !wiki X posts a link to the wiki for X
 @bot.command(name='wiki', help='Pulls up wiki link')
 async def wiki(ctx, subject, *args):
-    for arg in args:
-        subject = subject + '_' + arg
+    subject = subject + '_' + '_'.join(args)
     wiki_message = 'https://oldschool.runescape.wiki/w/' + subject
     if f.getResponse(wiki_message) == 404:
         await ctx.send('OSRS Wiki article with that title does not exist.')
@@ -137,7 +133,7 @@ async def chance(ctx, droprate, actions=None):
 async def tracker(ctx, period, *args):
     tracker_message = ''
     Skill = 'Skill'
-    username = f.formatUsername(args)
+    username = ' '.join(args)
     delta_response = WiseOldMan.GET(f'/players/username/{username}/gained?period={period}')
     if 'message' in delta_response:
         tracker_message = f'Player {username} does not exist on Wise Old Man XP Tracker.'
