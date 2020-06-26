@@ -23,6 +23,8 @@ skill_name = ['Overall', 'Attack', 'Defence', 'Strength', 'Hitpoints', 'Ranged',
       'Mining', 'Herblore', 'Agility', 'Thieving', 'Slayer',
       'Farming', 'Runecraft', 'Hunter', 'Construction']
 
+ExchangeURL = 'https://rsbuddy.com/exchange/summary.json'
+
 WiseOldMan = API_Request('https://wiseoldman.net/api')
 Hiscores = API_Request('http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player=')
 
@@ -54,48 +56,29 @@ async def hiscore(ctx, oneSkill, *args):
 # !ge X posts GE price information of first 10 items that include X
 @bot.command(name='ge', help='Posts GE price of items')
 async def ge(ctx, item, *args):
-    item = item + ' ' + ' '.join(args)
+    if args is not None:
+        item = item + ' ' + ' '.join(args)
     if len(item) < 3:
-        await ctx.send('Please be more specific.')
+        ge_message = 'Please be more specific.'
     else:
-        ge_message_header = f.formatDiscord(f'{"Item":<40s}{"Buy Order":>15s}{"Sell":>15s}{"Margin":>15s}')
-        ge_message_body = ''
-        counter = 0
-        itemrequest = requests.get(
-            'https://www.osrsbox.com/osrsbox-db/items-complete.json')
-        itemrequest = itemrequest.json()
-        ge_lookup = requests.get('https://rsbuddy.com/exchange/summary.json')
-        ge_lookup = ge_lookup.json()
-
-        for i in itemrequest:  # search for item in item list up to first 10 results
-            if f.formatSearch(item) in f.formatSearch(itemrequest[i]['name']):
-                if itemrequest[i]['noted'] == False and itemrequest[i]['placeholder'] == False and itemrequest[i]['tradeable_on_ge'] == True:
-                    counter += 1
-                    if counter < 11:
-                        try:
-                            buyPrice = ge_lookup[i]['buy_average']
-                            sellPrice = ge_lookup[i]['sell_average']
-                            margin = buyPrice - sellPrice
-                            buyPrice = f'{buyPrice:n}'
-                            sellPrice = f'{sellPrice:n}'
-                            margin = f'{margin:n}'
-                            ge_message_body = ge_message_body + \
-                                f'\n{itemrequest[i]["name"]:<40s}{str(buyPrice):>15s}{str(sellPrice):>15s}{str(margin):>15s}'
-                        except KeyError:
-                            ge_message_body = ge_message_body + \
-                                f'\n{itemrequest[i]["name"]:<40s}{"N/A":>15s}{"N/A":>15s}{"N/A":>15s}'
-                    elif counter == 11:
-                        ge_message_body = ge_message_body + \
-                            '\n\nShowing first 10 results only. Please refine search if item is not listed.'
-                        break
-
-        if counter == 0:  # if no results found
-            await ctx.send('No item found with ' + '"' + item + '" ' + 'name on GE.')
+        foundItems, maxIter_Flag = f.searchItems(item, 10)
+        if foundItems == {}:
+            ge_message = 'No item named' + ' "' + item + '" ' + 'found on GE.'
         else:
+            ge_message_header = f.formatDiscord(f'{"Item":<40s}{"Buy Order":>15s}{"Sell":>15s}{"Margin":>15s}')
+            ge_message_body = ''
+            itemPrices = f.searchPrice(foundItems, ExchangeURL)
+            for key in itemPrices:
+                singleItem = itemPrices[key]
+                ge_message_body = (ge_message_body + 
+                f'\n{singleItem["name"]:<40s}{singleItem["buyPrice"]:>15}'
+                f'{singleItem["sellPrice"]:>15}{singleItem["margin"]:>15}')
+            if maxIter_Flag == True:
+                ge_message_body = (ge_message_body +
+                '\n\nShowing the first 10 results only. Please refine the search if the item is not listed.') 
             ge_message = ge_message_header + f.formatDiscord(ge_message_body)
-            await ctx.send(ge_message)
-
-
+    await ctx.send(ge_message)
+        
 # !wiki X posts a link to the wiki for X
 @bot.command(name='wiki', help='Pulls up wiki link')
 async def wiki(ctx, subject, *args):
@@ -141,8 +124,8 @@ async def tracker(ctx, period, *args):
         for skill in delta_response['data']:
             gains = delta_response['data'][skill]['experience']['gained']
             if gains > 0:
-                tracker_message = tracker_message + \
-                    f'\n{skill.capitalize():<20s}{gains:n}'
+                tracker_message = (tracker_message + 
+                f'\n{skill.capitalize():<20s}{gains:n}')
             if skill == "construction":
                 break
         if tracker_message == '':

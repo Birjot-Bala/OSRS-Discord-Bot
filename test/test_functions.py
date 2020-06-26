@@ -55,8 +55,9 @@ def test_API_Request_Class(test_API_Request_Object, mockAPI):
 
 def test_searchItems():
     num = 10
-    assert f.searchItems('1321931', num) == {}
-    assert len(f.searchItems('a', num)) == num
+    assert f.searchItems('1321931', num) == ({}, False)
+    assert len(f.searchItems('a', num)[0]) == num
+    assert f.searchItems('Blood Rune', 1)[0] == {'565':'Blood rune'}
 
 def test_searchPrice(requests_mock):
     test_json = {"4151":{"id":4151,"name":"Abyssal whip","members":True,
@@ -64,5 +65,7 @@ def test_searchPrice(requests_mock):
                 "sell_average":2859858,"sell_quantity":10,"overall_average":2862450,
                 "overall_quantity":22}}
     mockURL = 'https://test.com/exchange'
+    test_Response = {'4151':{'name':'Abyssal whip', 'buyPrice':2864609, 'sellPrice':2859858, 'margin':4751}}
     requests_mock.get(mockURL, json=test_json)
-    assert f.searchPrice(f.searchItems('Abyssal whip',1), mockURL) == {'4151':['Abyssal whip', 2864609, 2859858, 4751]}
+    test_itemDict = f.searchItems('Abyssal whip',1)[0]
+    assert f.searchPrice(test_itemDict, mockURL) == test_Response

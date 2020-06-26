@@ -8,6 +8,7 @@ regexPunc = re.compile('[%s]' % re.escape(string.punctuation))
 
 def formatSearch(s):
     s = s.lower()
+    s = s.replace(' ','')
     return regexPunc.sub('', s)
 
 def splitText(regex, delimiter, text):
@@ -34,6 +35,11 @@ def getResponse(target_url):
         except ValueError:
             return request.text #return raw text
 
+def formatNumbers(*args):
+    for num in args:
+        num = f'{num:n}'
+    return args
+
 def formatDiscord(message):
     # format message for discord
     formMessage = '```' + message + '```'
@@ -59,24 +65,29 @@ def searchItems(query, num):
     # search osrsbox items list for query
     itemDict = {}
     counter = 0
+    maxIter_flag = False
     for item in all_db_items:
-        if query in item.name:
+        if (formatSearch(query) in formatSearch(item.name) and 
+        item.tradeable_on_ge == True and item.noted == False and item.placeholder == False):
             itemDict[str(item.id)] = item.name
             counter += 1
             if counter == num:
+                maxIter_flag = True
                 break
-    return itemDict 
+    return itemDict, maxIter_flag 
 
 def searchPrice(itemDict, ExchangeURL):
     # search prices using OSBuddy Exchange
     ge_prices = getResponse(ExchangeURL)
     for key in itemDict:
         try:
-            buyPrice, sellPrice = ge_prices[key]['buy_average'], ge_prices[key]['sell_average']
+            singleItem = ge_prices[key]
+            buyPrice, sellPrice = singleItem['buy_average'], singleItem['sell_average']
             margin = buyPrice - sellPrice
+            buyPrice, sellPrice, margin = formatNumbers(buyPrice, sellPrice, margin)
         except KeyError:
             buyPrice, sellPrice, margin = 'N/A', 'N/A', 'N/A'
-        itemDict[key] = [itemDict[key], buyPrice, sellPrice, margin]
+        itemDict[key] = {'name':itemDict[key], 'buyPrice':buyPrice, 'sellPrice':sellPrice, 'margin':margin}
     return itemDict
 
 
