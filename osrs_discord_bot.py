@@ -71,8 +71,8 @@ async def ge(ctx, item, *args):
             for key in itemPrices:
                 singleItem = itemPrices[key]
                 ge_message_body = (ge_message_body + 
-                f'\n{singleItem["name"]:<40s}{singleItem["buyPrice"]:>15}'
-                f'{singleItem["sellPrice"]:>15}{singleItem["margin"]:>15}')
+                f'\n{singleItem["name"]:<40s}{singleItem["buyPrice"]:>15n}'
+                f'{singleItem["sellPrice"]:>15n}{singleItem["margin"]:>15n}')
             if maxIter_Flag == True:
                 ge_message_body = (ge_message_body +
                 '\n\nShowing the first 10 results only. Please refine the search if the item is not listed.') 
