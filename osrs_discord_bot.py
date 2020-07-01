@@ -82,7 +82,8 @@ async def ge(ctx, item, *args):
 # !wiki X posts a link to the wiki for X
 @bot.command(name='wiki', help='Pulls up wiki link')
 async def wiki(ctx, subject, *args):
-    subject = subject + '_' + '_'.join(args)
+    if args is not None:
+        subject = subject + '_' + '_'.join(args)
     wiki_message = 'https://oldschool.runescape.wiki/w/' + subject
     if f.getResponse(wiki_message) == 404:
         await ctx.send('OSRS Wiki article with that title does not exist.')
