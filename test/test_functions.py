@@ -6,6 +6,7 @@ import string
 import functions as f
 
 from functions import API_Request
+from requests.exceptions import Timeout
 
 class MockAPI:
     def __init__(self, requests_mock):
@@ -13,6 +14,7 @@ class MockAPI:
         self.mock_404_url = requests_mock.get('https://test.com/404', text='Not Found', status_code=404)
         self.mock_json_url = requests_mock.get('https://test.com/json', json= {'abc': 'def'})
         self.mock_text_url = requests_mock.get('https://test.com/text', text='resp')
+        self.mock_timeout_url = requests_mock.get('https://test.com/timeout', exc=Timeout)
 
 @pytest.fixture
 def test_API_Request_Object(requests_mock):
@@ -38,20 +40,22 @@ def test_splitText():
 def test_formatDiscord():
     assert f.formatDiscord('test') == '```test```'
 
-def test_getResponse_False(requests_mock):
-    requests_mock.get('https://test.com/404', text='Not Found', status_code=404)  
-    response = f.getResponse('https://test.com/404')
-    assert 404 == response
-
-def test_getResponse_True(requests_mock):
+def test_getResponse(requests_mock):
+    requests_mock.get('https://test.com/404', text='Not Found', status_code=404)
     requests_mock.get('https://test.com/json', json= {'abc': 'def'})
-    response = f.getResponse('https://test.com/json')
-    assert response == {'abc': 'def'}
-    
+    requests_mock.get('https://test.com/timeout', exc=Timeout)
+    response_404 = f.getResponse('https://test.com/404')
+    response_json = f.getResponse('https://test.com/json')
+    response_timeout = f.getResponse('https://test.com/timeout')
+    assert 404 == response_404
+    assert {'abc': 'def'} == response_json
+    assert 'timeout' == response_timeout
+
 def test_API_Request_Class(test_API_Request_Object, mockAPI):
     assert test_API_Request_Object.GET('/404') == 404
     assert test_API_Request_Object.GET('/json') == {'abc': 'def'}
     assert test_API_Request_Object.GET('/text') == 'resp'
+    assert test_API_Request_Object.GET('/timeout') == 'timeout'
 
 def test_searchItems():
     num = 10

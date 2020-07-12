@@ -2,6 +2,7 @@ import requests
 import re
 import string
 from osrsbox import items_api
+from requests.exceptions import Timeout
 
 all_db_items = items_api.load()
 regexPunc = re.compile('[%s]' % re.escape(string.punctuation))
@@ -24,16 +25,24 @@ def fraction2Float(frac):
 
 def getResponse(target_url):
     # handle requests and acquire response
-    request = requests.get(target_url)
-    response = request.status_code
-    if response == 404:
+    try:
+        # timeout parameter to avoid hanging waiting for response
+        request = requests.get(target_url, timeout=6)
+        response = request.status_code
+        if response == 404:
+            return response
+        else:
+        # check the response to return it as json or raw text
+            try:
+                message = request.json()
+                return message
+            except ValueError:
+                return request.text #return raw text
+    except Timeout:
+        response = 'timeout'
         return response
-    else:
-        try:
-            message = request.json()
-            return message
-        except ValueError:
-            return request.text #return raw text
+        
+    
 
 def formatNumbers(*args):
     for num in args:

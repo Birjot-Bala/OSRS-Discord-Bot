@@ -25,9 +25,11 @@ skill_name = ['Overall', 'Attack', 'Defence', 'Strength', 'Hitpoints', 'Ranged',
 
 ExchangeURL = 'https://rsbuddy.com/exchange/summary.json'
 
+# initializing class instances for APIs being used
 WiseOldMan = API_Request('https://wiseoldman.net/api')
 Hiscores = API_Request('http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player=')
 
+# selected prefix for discord commands
 bot = commands.Bot(command_prefix='!')
         
 
@@ -48,6 +50,8 @@ async def hiscore(ctx, oneSkill, *args):
         response = Hiscores.GET(username)
         if response == 404:
             hiscore_message = f'Player {username} does not exist or OSRS Hiscores are down.'
+        elif response == 'timeout':
+            hiscore_message = 'The request to OSRS Hiscores timed out.'
         else:
             hiscore_message = f.formatHiscore(username, oneSkill, skill_name,response)
     await ctx.send(hiscore_message)
