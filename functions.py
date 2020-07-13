@@ -1,6 +1,8 @@
 import requests
 import re
 import string
+import csv
+
 from osrsbox import items_api
 from requests.exceptions import Timeout
 
@@ -11,11 +13,6 @@ def formatSearch(s):
     s = s.lower()
     s = s.replace(' ','')
     return regexPunc.sub('', s)
-
-def splitText(regex, delimiter, text):
-    outputList = re.findall(regex, text)
-    outputList = [i.split(delimiter) for i in outputList]
-    return outputList
 
 def fraction2Float(frac):
     # convert fractions to floats
@@ -40,8 +37,7 @@ def getResponse(target_url):
                 return request.text #return raw text
     except Timeout:
         response = 'timeout'
-        return response
-        
+        return response        
     
 
 def formatNumbers(*args):
@@ -56,17 +52,19 @@ def formatDiscord(message):
 
 def formatHiscore(username, oneSkill, skill_name, response):
     # format the response from OSRS Hiscore API
-    skills = splitText(r'(.*,.*,.*)', ',', response)
+    splitLines = response.splitlines()
+    reader = csv.reader(splitLines)
+    skills = list(reader)
     skill_dict = dict(zip(skill_name, skills))
     hiscore_message_header = formatDiscord(f'{username:<15s}{"Level":>10s}{"XP":>15s}')
     hiscore_message_body = ''
     if oneSkill == 'All':
         for s in skill_dict:
             hiscore_message_body = hiscore_message_body +\
-                 f'\n{s:<15s}{skill_dict[s][1]:>10s}{skill_dict[s][2]:>15s}'
+                 f'\n{s:<15s}{skill_dict[s][1]:>10s}{int(skill_dict[s][2]):>15n}'
     else:  
         hiscore_message_body = hiscore_message_body +\
-             f'\n{oneSkill:<15s}{skill_dict[oneSkill][1]:>10s}{skill_dict[oneSkill][2]:>15s}'
+             f'\n{oneSkill:<15s}{skill_dict[oneSkill][1]:>10s}{int(skill_dict[oneSkill][2]):>15n}'
     hiscore_message = hiscore_message_header + formatDiscord(hiscore_message_body)
     return hiscore_message
 

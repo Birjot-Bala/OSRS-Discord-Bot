@@ -32,11 +32,7 @@ def test_fraction2Float():
 def test_raises_exception_on_non_fraction_arguments():
     with pytest.raises(ValueError):
         f.fraction2Float('abc')
-
-def test_splitText():
-    outputList = f.splitText(r'(.,.,.)', ',', '1,3,4 1,5,6 7,3,4')
-    assert outputList == [['1','3','4'],['1','5','6'],['7','3','4']]    
-
+   
 def test_formatDiscord():
     assert f.formatDiscord('test') == '```test```'
 

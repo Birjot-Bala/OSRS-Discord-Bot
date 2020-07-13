@@ -6,8 +6,8 @@ import re
 import string
 import locale
 import functions as f
-from functions import API_Request
 
+from functions import API_Request
 from dotenv import load_dotenv
 from discord.ext import commands
 
@@ -27,7 +27,7 @@ ExchangeURL = 'https://rsbuddy.com/exchange/summary.json'
 
 # initializing class instances for APIs being used
 WiseOldMan = API_Request('https://wiseoldman.net/api')
-Hiscores = API_Request('http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player=')
+Hiscores = API_Request('https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws?player=')
 
 # selected prefix for discord commands
 bot = commands.Bot(command_prefix='!')
@@ -53,7 +53,7 @@ async def hiscore(ctx, oneSkill, *args):
         elif response == 'timeout':
             hiscore_message = 'The request to OSRS Hiscores timed out.'
         else:
-            hiscore_message = f.formatHiscore(username, oneSkill, skill_name,response)
+            hiscore_message = f.formatHiscore(username, oneSkill, skill_name, response)
     await ctx.send(hiscore_message)
 
 
