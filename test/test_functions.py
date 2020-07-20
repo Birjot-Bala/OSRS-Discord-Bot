@@ -18,10 +18,13 @@ class MockAPI:
         self.mock_text_url = requests_mock.get('https://test.com/text', text='resp')
         self.mock_timeout_url = requests_mock.get('https://test.com/timeout', exc=Timeout)
         self.mock_exchange_url = requests_mock.get('https://test.com/exchange', 
-            json={"4151":{"id":4151,"name":"Abyssal whip","members":True,
+            json={
+                "4151":{"id":4151,"name":"Abyssal whip","members":True,
                 "sp":120001,"buy_average":2864609,"buy_quantity":12,
                 "sell_average":2859858,"sell_quantity":10,"overall_average":2862450,
-                "overall_quantity":22}})
+                "overall_quantity":22}
+                    }
+            )
 
 @pytest.fixture
 def test_API_Request_Object(requests_mock):
@@ -45,11 +48,14 @@ def test_raises_exception_on_non_fraction_arguments():
 def test_formatDiscord():
     assert f.formatDiscord('test') == '```test```'
 
-def test_API_Request_Class(test_API_Request_Object, mockAPI):
-    assert test_API_Request_Object.GET('/404') == 404
-    assert test_API_Request_Object.GET('/json') == {'abc': 'def'}
-    assert test_API_Request_Object.GET('/text') == 'resp'
-    assert test_API_Request_Object.GET('/timeout') == 'timeout'
+@pytest.mark.parametrize(
+    'url,response', [
+        ('/404', 404), ('/json', {'abc': 'def'}), ('/text', 'resp'),
+        ('/timeout', 'timeout')
+        ]
+    )
+def test_API_Request_Class(test_API_Request_Object, mockAPI, url, response):
+    assert test_API_Request_Object.GET(url) == response
 
 def test_searchItems():
     num = 10
@@ -62,3 +68,13 @@ def test_searchPrice(test_API_Request_Object, mockAPI):
     test_Response = {'4151':{'name':'Abyssal whip', 'buyPrice':2864609, 'sellPrice':2859858, 'margin':4751}}
     test_itemDict = se.searchItems('Abyssal whip',1)[0]
     assert se.searchPrice(test_itemDict, test_API_Request_Object) == test_Response
+
+@pytest.mark.parametrize(
+    "chance,actions,message", [
+        ('1/100', 100, r'63.40% chance of getting the drop within 100 actions.'),
+        ('1/100', None, 'Please enter the number of actions.'),
+        ('abc', None, 'Please enter drop rates in fractions or decimals and actions in integers.')
+        ]
+    )
+def test_chance_message(chance, actions, message):
+    assert se.chance_message(chance, actions) == message
