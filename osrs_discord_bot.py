@@ -1,33 +1,31 @@
-# OSRS_Hiscore.py
+# osrs_discord_bot.py
 
 import os
 import requests
-import re
 import string
 import locale
-import functions as f
 
-from functions import API_Request
+import lib.services as se
+import lib.discord_formatter as f
+
+from lib.services import ApiRequest
 from dotenv import load_dotenv
 from discord.ext import commands
+from lib.constants import EXCHANGE_URL, WISE_BASE_URL, HISCORE_BASE_URL, SKILL_NAMES, WIKI_BASE_URL
 
 locale.setlocale(locale.LC_ALL, '')
 load_dotenv()
 
-
 # acquiring the bot token from environment variables
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-skill_name = ['Overall', 'Attack', 'Defence', 'Strength', 'Hitpoints', 'Ranged', 'Prayer',
-      'Magic', 'Cooking', 'Woodcutting', 'Fletching', 'Fishing', 'Firemaking', 'Crafting', 'Smithing',
-      'Mining', 'Herblore', 'Agility', 'Thieving', 'Slayer',
-      'Farming', 'Runecraft', 'Hunter', 'Construction']
-
-ExchangeURL = 'https://rsbuddy.com/exchange/summary.json'
 
 # initializing class instances for APIs being used
-WiseOldMan = API_Request('https://wiseoldman.net/api')
-Hiscores = API_Request('https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws?player=')
+WiseOldMan = ApiRequest(WISE_BASE_URL)
+Hiscores = ApiRequest(HISCORE_BASE_URL)
+GrandExchange = ApiRequest(EXCHANGE_URL)
+Wiki = ApiRequest(WIKI_BASE_URL)
+
 
 # selected prefix for discord commands
 bot = commands.Bot(command_prefix='!')
@@ -43,39 +41,38 @@ async def on_ready():
 async def hiscore(ctx, oneSkill, *args):
     username = ' '.join(args)
     oneSkill = oneSkill.capitalize()
-    if username == '' or oneSkill not in [skill_name, 'All']:
+    if username == '' or oneSkill not in [SKILL_NAMES, 'All']:
         hiscore_message = 'Please enter a skill or all before the username.'
     else:
-# request data from OSRS Hiscores
+    # request data from OSRS Hiscores
         response = Hiscores.GET(username)
         if response == 404:
             hiscore_message = f'Player {username} does not exist or OSRS Hiscores are down.'
         elif response == 'timeout':
             hiscore_message = 'The request to OSRS Hiscores timed out.'
         else:
-            hiscore_message = f.formatHiscore(username, oneSkill, skill_name, response)
+            hiscore_message = f.formatHiscore(username, oneSkill, SKILL_NAMES, response)
     await ctx.send(hiscore_message)
 
 
 # !ge X posts GE price information of first 10 items that include X
 @bot.command(name='ge', help='Posts GE price of items')
-async def ge(ctx, item, *args):
-    if args is not None:
-        item = item + ' ' + ' '.join(args)
+async def ge(ctx, *args):
+    item = ' '.join(args)
     if len(item) < 3:
         ge_message = 'Please be more specific.'
     else:
-        foundItems, maxIter_Flag = f.searchItems(item, 10)
+        foundItems, maxIter_Flag = se.searchItems(item, 10)
         if foundItems == {}:
             ge_message = 'No item named' + ' "' + item + '" ' + 'found on GE.'
         else:
-            ge_message_header = f.formatDiscord(f'{"Item":<40s}{"Offer Price":>15s}{"Sell Price":>15s}{"Margin":>15s}')
+            ge_message_header = f.formatDiscord(f'{"Item":<20s}{"Offer Price":>15s}{"Sell Price":>15s}{"Margin":>15s}')
             ge_message_body = ''
-            itemPrices = f.searchPrice(foundItems, ExchangeURL)
+            itemPrices = se.searchPrice(foundItems, GrandExchange)
             for key in itemPrices:
                 singleItem = itemPrices[key]
                 ge_message_body = (ge_message_body + 
-                f'\n{singleItem["name"]:<40s}{singleItem["buyPrice"]:>15n}'
+                f'\n{singleItem["name"]:<20s}{singleItem["buyPrice"]:>15n}'
                 f'{singleItem["sellPrice"]:>15n}{singleItem["margin"]:>15n}')
             if maxIter_Flag == True:
                 ge_message_body = (ge_message_body +
@@ -85,11 +82,10 @@ async def ge(ctx, item, *args):
         
 # !wiki X posts a link to the wiki for X
 @bot.command(name='wiki', help='Pulls up wiki link')
-async def wiki(ctx, subject, *args):
-    if args is not None:
-        subject = subject + '_' + '_'.join(args)
-    wiki_message = 'https://oldschool.runescape.wiki/w/' + subject
-    if f.getResponse(wiki_message) == 404:
+async def wiki(ctx, *args):
+    subject = '_'.join(args)
+    wiki_message = Wiki.base_url + subject
+    if Wiki.GET(subject) == 404:
         await ctx.send('OSRS Wiki article with that title does not exist.')
     else:
         await ctx.send(wiki_message)

@@ -97,7 +97,7 @@ def searchPrice(itemDict, ExchangeURL):
         itemDict[key] = {'name':itemDict[key], 'buyPrice':buyPrice, 'sellPrice':sellPrice, 'margin':margin}
     return itemDict
 
-
+   
 class API_Request:
     def __init__(self, base_url):
         self.base_url = base_url
