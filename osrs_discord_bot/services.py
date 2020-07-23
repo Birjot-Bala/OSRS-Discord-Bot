@@ -9,7 +9,7 @@ from osrsbox import items_api
 from requests.exceptions import Timeout
 from constants import (
     SKILL_NAMES, WIKI_BASE_URL, WISE_BASE_URL, EXCHANGE_URL, HISCORE_BASE_URL
-    )
+)
 
 ALL_DB_ITEMS = items_api.load()
 
