@@ -1,30 +1,20 @@
 # osrs_discord_bot.py
 
 import os
-import requests
 import string
 import locale
 
-import lib.services as se
-import lib.discord_formatter as f
+import services as se
 
-from lib.services import ApiRequest
+from services import WiseOldMan, Hiscores, GrandExchange, Wiki
 from dotenv import load_dotenv
 from discord.ext import commands
-from lib.constants import EXCHANGE_URL, WISE_BASE_URL, HISCORE_BASE_URL, SKILL_NAMES, WIKI_BASE_URL
 
 locale.setlocale(locale.LC_ALL, '')
 load_dotenv()
 
 # acquiring the bot token from environment variables
 TOKEN = os.getenv('DISCORD_TOKEN')
-
-
-# initializing class instances for APIs being used
-WiseOldMan = ApiRequest(WISE_BASE_URL)
-Hiscores = ApiRequest(HISCORE_BASE_URL)
-GrandExchange = ApiRequest(EXCHANGE_URL)
-Wiki = ApiRequest(WIKI_BASE_URL)
 
 
 # selected prefix for discord commands

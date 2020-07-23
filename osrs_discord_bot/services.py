@@ -2,12 +2,14 @@
 
 import requests
 
-import lib.discord_formatter as f
+import discord_formatter as f
 
 
 from osrsbox import items_api
 from requests.exceptions import Timeout
-from lib.constants import SKILL_NAMES
+from constants import (
+    SKILL_NAMES, WIKI_BASE_URL, WISE_BASE_URL, EXCHANGE_URL, HISCORE_BASE_URL
+    )
 
 ALL_DB_ITEMS = items_api.load()
 
@@ -89,8 +91,9 @@ def chance_message(droprate, actions=None):
 
 def hiscore_message(HiscoreApi, skill, *args):
     username = ' '.join(args)
+    skill = skill.lower()
     skill = skill.capitalize()
-    if username == '' or skill not in [SKILL_NAMES, 'All']:
+    if username == '' or skill not in SKILL_NAMES + ['All']:
         hiscore_message = 'Please enter a skill or all before the username.'
     else:
     # request data from OSRS Hiscores
@@ -147,3 +150,9 @@ def tracker_message(WiseApi, period, *args):
         else:
             tracker_message = f'```{"Skill":<20s}Experience```' + '```' + tracker_message + '```'
     return tracker_message
+
+# initializing class instances for APIs being used
+WiseOldMan = ApiRequest(WISE_BASE_URL)
+Hiscores = ApiRequest(HISCORE_BASE_URL)
+GrandExchange = ApiRequest(EXCHANGE_URL)
+Wiki = ApiRequest(WIKI_BASE_URL)

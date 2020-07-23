@@ -3,10 +3,10 @@
 import pytest
 import requests
 import string
-import lib.discord_formatter as f
-import lib.services as se
+import osrs_discord_bot.discord_formatter as f
+import osrs_discord_bot.services as se
 
-from lib.services import ApiRequest
+from osrs_discord_bot.services import ApiRequest
 from requests.exceptions import Timeout
 
 class MockAPI:
@@ -78,3 +78,10 @@ def test_searchPrice(test_API_Request_Object, mockAPI):
     )
 def test_chance_message(chance, actions, message):
     assert se.chance_message(chance, actions) == message
+    
+
+def test_ge_message(test_API_Request_Object, mockAPI, capsys):
+    test_API_Request_Object.base_url = 'https://test.com/exchange'
+    ge_message = se.ge_message(test_API_Request_Object, 'Abyssal whip')
+    assert isinstance(ge_message, str) == True
+
