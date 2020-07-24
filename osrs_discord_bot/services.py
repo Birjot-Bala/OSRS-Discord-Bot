@@ -41,7 +41,7 @@ class ApiRequest:
 
 def searchPrice(itemDict, ApiRequest):
     # search prices using OSBuddy Exchange
-    ge_prices = ApiRequest.GET()
+    ge_prices = ApiRequest.GET('/summary.json')
     for key in itemDict:
         try:
             singleItem = ge_prices[key]

@@ -19,7 +19,7 @@ class MockAPI:
         self.mock_json_url = requests_mock.get('https://test.com/json', json= {'abc': 'def'})
         self.mock_text_url = requests_mock.get('https://test.com/text', text='resp')
         self.mock_timeout_url = requests_mock.get('https://test.com/timeout', exc=Timeout)
-        self.mock_exchange_url = requests_mock.get('https://test.com/exchange', 
+        self.mock_exchange_url = requests_mock.get('https://test.com/summary.json', 
             json={
                 "4151":{"id":4151,"name":"Abyssal whip","members":True,
                 "sp":120001,"buy_average":2864609,"buy_quantity":12,
@@ -33,9 +33,12 @@ class MockAPI:
             'https://test.com/players/username/test/gained?period=test',
             json=wise_response
             )
-
-
-            
+        with open('test/hiscore_response.txt') as text_file:
+            hiscore_response = text_file.read()
+        self.mock_hiscore_url = requests_mock.get('https://test.com/test_user',
+            text=hiscore_response
+            )
+         
 
 @pytest.fixture
 def test_API_Request_Object(requests_mock):
@@ -62,7 +65,6 @@ def test_searchItems():
     assert se.searchItems('Blood Rune', 1)[0] == {'565':'Blood rune'}
 
 def test_searchPrice(test_API_Request_Object, mockAPI):
-    test_API_Request_Object.base_url = 'https://test.com/exchange'
     test_Response = {'4151':{'name':'Abyssal whip', 'buyPrice':2864609, 'sellPrice':2859858, 'margin':4751}}
     test_itemDict = se.searchItems('Abyssal whip',1)[0]
     assert se.searchPrice(test_itemDict, test_API_Request_Object) == test_Response
@@ -79,11 +81,15 @@ def test_chance_message(chance, actions, message):
     
 
 def test_ge_message(test_API_Request_Object, mockAPI):
-    test_API_Request_Object.base_url = 'https://test.com/exchange'
     ge_message = se.ge_message(test_API_Request_Object, 'Abyssal whip')
     assert isinstance(ge_message, str) == True
+
 
 def test_tracker_message(test_API_Request_Object, mockAPI):
     tracker_message = se.tracker_message(test_API_Request_Object, 'test', 'test')
     assert isinstance(tracker_message, str) == True
 
+
+def test_hiscore_message(test_API_Request_Object, mockAPI):
+    hiscore_message = se.hiscore_message(test_API_Request_Object, 'All', '/test_user')
+    assert isinstance(hiscore_message, str) == True
