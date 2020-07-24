@@ -1,15 +1,17 @@
-# test_functions.py
+# test_services.py
+# contains tests for services.py
 
 import pytest
 import requests
-import string
-import osrs_discord_bot.discord_formatter as f
+import json
+
 import osrs_discord_bot.services as se
 
 from osrs_discord_bot.services import ApiRequest
 from requests.exceptions import Timeout
 
 class MockAPI:
+    
     def __init__(self, requests_mock):
         
         self.mock_base_url = requests_mock.get('https://test.com')
@@ -23,8 +25,17 @@ class MockAPI:
                 "sp":120001,"buy_average":2864609,"buy_quantity":12,
                 "sell_average":2859858,"sell_quantity":10,"overall_average":2862450,
                 "overall_quantity":22}
-                    }
+                }
             )
+        with open('test/wise_response.json') as json_file:
+            wise_response = json.load(json_file)
+        self.mock_tracker_url = requests_mock.get(
+            'https://test.com/players/username/test/gained?period=test',
+            json=wise_response
+            )
+
+
+            
 
 @pytest.fixture
 def test_API_Request_Object(requests_mock):
@@ -33,20 +44,7 @@ def test_API_Request_Object(requests_mock):
 @pytest.fixture
 def mockAPI(requests_mock): 
     return MockAPI(requests_mock)
-
-def test_formatSearch():
-    assert f.formatSearch('a,2.5 G / ') == 'a25g'
-
-def test_fraction2Float():
-    assert f.fraction2Float('1/2') == 0.5
-    assert f.fraction2Float('1.0/2.0') == 0.5
-
-def test_raises_exception_on_non_fraction_arguments():
-    with pytest.raises(ValueError):
-        f.fraction2Float('abc')
    
-def test_formatDiscord():
-    assert f.formatDiscord('test') == '```test```'
 
 @pytest.mark.parametrize(
     'url,response', [
@@ -80,8 +78,12 @@ def test_chance_message(chance, actions, message):
     assert se.chance_message(chance, actions) == message
     
 
-def test_ge_message(test_API_Request_Object, mockAPI, capsys):
+def test_ge_message(test_API_Request_Object, mockAPI):
     test_API_Request_Object.base_url = 'https://test.com/exchange'
     ge_message = se.ge_message(test_API_Request_Object, 'Abyssal whip')
     assert isinstance(ge_message, str) == True
+
+def test_tracker_message(test_API_Request_Object, mockAPI):
+    tracker_message = se.tracker_message(test_API_Request_Object, 'test', 'test')
+    assert isinstance(tracker_message, str) == True
 

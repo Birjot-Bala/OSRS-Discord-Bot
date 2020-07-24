@@ -1,4 +1,5 @@
-# discord_formatter.py
+# formatter_discord.py
+# includes functions that format messages for discord
 
 import csv
 import re

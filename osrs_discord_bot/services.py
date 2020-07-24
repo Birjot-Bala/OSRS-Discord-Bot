@@ -2,7 +2,7 @@
 
 import requests
 
-import discord_formatter as f
+import formatter_discord as f
 
 
 from osrsbox import items_api
@@ -148,7 +148,7 @@ def tracker_message(WiseApi, period, *args):
         if tracker_message == '':
             tracker_message = 'No gains in the specified period.'   
         else:
-            tracker_message = f'```{"Skill":<20s}Experience```' + '```' + tracker_message + '```'
+            tracker_message = f'```{"Skill":<20s}Experience```' + f.formatDiscord(tracker_message)
     return tracker_message
 
 # initializing class instances for APIs being used
