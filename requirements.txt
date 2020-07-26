@@ -14,7 +14,7 @@ lazy-object-proxy==1.4.3
 mccabe==0.6.1
 more-itertools==8.4.0
 multidict==4.7.6
-osrsbox==1.3.30
+osrsbox==1.3.34
 packaging==20.4
 pluggy==0.13.1
 py==1.8.2
