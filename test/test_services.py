@@ -58,16 +58,16 @@ def mockAPI(requests_mock):
 def test_API_Request_Class(test_API_Request_Object, mockAPI, url, response):
     assert test_API_Request_Object.GET(url) == response
 
-def test_searchItems():
+def test_search_items():
     num = 10
-    assert se.searchItems('1321931', num) == ({}, False)
-    assert len(se.searchItems('a', num)[0]) == num
-    assert se.searchItems('Blood Rune', 1)[0] == {'565':'Blood rune'}
+    assert se.search_items('1321931', num) == ({}, False)
+    assert len(se.search_items('a', num)[0]) == num
+    assert se.search_items('Blood Rune', 1)[0] == {'565':'Blood rune'}
 
-def test_searchPrice(test_API_Request_Object, mockAPI):
+def test_search_price(test_API_Request_Object, mockAPI):
     test_Response = {'4151':{'name':'Abyssal whip', 'buyPrice':2864609, 'sellPrice':2859858, 'margin':4751}}
-    test_itemDict = se.searchItems('Abyssal whip',1)[0]
-    assert se.searchPrice(test_itemDict, test_API_Request_Object) == test_Response
+    test_itemDict = se.search_items('Abyssal whip',1)[0]
+    assert se.search_price(test_itemDict, test_API_Request_Object) == test_Response
 
 @pytest.mark.parametrize(
     "chance,actions,message", [

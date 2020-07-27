@@ -1,5 +1,20 @@
 # services.py
 
+"""Contains logic for sending requests and output messages.
+
+Classes:
+    ApiRequest
+
+Functions:
+    search_price
+    search_items
+    chance_message
+    hiscore_message
+    ge_message
+    tracker_message
+
+"""
+
 import requests
 
 import formatter_discord as f
@@ -39,7 +54,14 @@ class ApiRequest:
             return response
 
 
-def searchPrice(itemDict, ApiRequest):
+def search_price(itemDict, ApiRequest):
+    """Searches for the prices using the GE API.
+
+    Args:
+        itemDict (dict): Key, value of item ids, item names.
+        
+    
+    """
     # search prices using OSBuddy Exchange
     ge_prices = ApiRequest.GET('/summary.json')
     for key in itemDict:
@@ -54,7 +76,7 @@ def searchPrice(itemDict, ApiRequest):
     return itemDict
 
 
-def searchItems(query, num):
+def search_items(query, num):
     # search osrsbox items list for query
     itemDict = {}
     counter = 0
@@ -112,13 +134,13 @@ def ge_message(GEApi, *args):
     if len(item) < 3:
         ge_message = 'Please be more specific.'
     else:
-        foundItems, maxIter_Flag = searchItems(item, 10)
+        foundItems, maxIter_Flag = search_items(item, 10)
         if foundItems == {}:
             ge_message = 'No item named' + ' "' + item + '" ' + 'found on GE.'
         else:
             ge_message_header = f.formatDiscord(f'{"Item":<40s}{"Offer Price":>15s}{"Sell Price":>15s}{"Margin":>15s}')
             ge_message_body = ''
-            itemPrices = searchPrice(foundItems, GEApi)
+            itemPrices = search_price(foundItems, GEApi)
             for key in itemPrices:
                 singleItem = itemPrices[key]
                 ge_message_body = (ge_message_body + 
