@@ -176,14 +176,15 @@ def tracker_message(period, *args):
     if 'message' in delta_dict:
         tracker_message = f'Player {username} does not exist on Wise Old Man XP Tracker.'
     else:
-        tracker_message = parse_tracker_response(delta_dict)
+        tracker_message = _parse_tracker_response(delta_dict)
         if tracker_message == '':
             tracker_message = 'No gains in the specified period.'   
         else:
             tracker_message = f'```{"Skill":<20s}Experience```' + f.formatDiscord(tracker_message)
     return tracker_message
 
-def parse_tracker_response(delta_dict):
+
+def _parse_tracker_response(delta_dict):
     tracker_message = ""
     filtered_dict = {key:value for key, value in delta_dict["data"].items() if key in SKILL_NAMES}
     for skill in filtered_dict:
@@ -196,7 +197,6 @@ def parse_tracker_response(delta_dict):
 
 
 # initializing class instances for APIs being used
-WiseOldMan = ApiRequest(WISE_BASE_URL)
 Hiscores = ApiRequest(HISCORE_BASE_URL)
 GrandExchange = ApiRequest(EXCHANGE_URL)
 Wiki = ApiRequest(WIKI_BASE_URL)
