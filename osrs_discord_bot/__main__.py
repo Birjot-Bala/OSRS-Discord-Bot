@@ -1,12 +1,10 @@
 # osrs_discord_bot.py
 
 import os
-import string
 import locale
 
 import services as se
 
-from services import Hiscores, Wiki
 from dotenv import load_dotenv
 from discord.ext import commands
 
@@ -29,7 +27,7 @@ async def on_ready():
 # !hiscore {skill} {username}
 @bot.command(name='hiscore', help='Posts player hiscores.')
 async def hiscore(ctx, skill, *args):
-    hiscore_message = se.hiscore_message(Hiscores, skill, *args)
+    hiscore_message = se.hiscore_message(skill, *args)
     await ctx.send(hiscore_message)
 
 
@@ -38,24 +36,29 @@ async def hiscore(ctx, skill, *args):
 async def ge(ctx, *args):
     ge_message = se.ge_message(*args)
     await ctx.send(ge_message)
+     
         
 # !wiki X posts a link to the wiki for X
 @bot.command(name='wiki', help='Pulls up wiki link')
 async def wiki(ctx, *args):
-    subject = '_'.join(args)
-    wiki_message = Wiki.base_url + subject
-    if Wiki.GET(subject) == 404:
-        wiki_message = 'OSRS Wiki article with that title does not exist.'
+    wiki_message = se.wiki_message(*args)
     await ctx.send(wiki_message)
 
-@bot.command(name='chance', help='Calculates the percent chance of getting a drop within a set number of actions.')
+
+@bot.command(
+    name='chance',
+    help='Calculates the percent chance of getting a drop within a set number of actions.'
+)
 #!chance X, Y calculates the chance of hitting the X drop rate in Y actions
 async def chance(ctx, droprate, actions=None):
     chance_message = se.chance_message(droprate, actions)
     await ctx.send(chance_message)
 
 
-@bot.command(name='tracker', help='Uses the Wise Old Man API to track XP gains. !tracker (period) (username). Periods can be day, week, month or year.')
+@bot.command(
+    name='tracker',
+    help='Uses the Wise Old Man API to retrieve tracked XP gains.'
+)
 async def tracker(ctx, period, *args):
     tracker_message = se.tracker_message(period, *args)
     await ctx.send(tracker_message)

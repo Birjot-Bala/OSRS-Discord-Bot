@@ -7,7 +7,6 @@ import json
 
 import osrs_discord_bot.services as se
 
-from osrs_discord_bot.services import ApiRequest
 from requests.exceptions import Timeout
 
 class MockAPI:
@@ -35,28 +34,16 @@ class MockAPI:
             )
         with open('test/hiscore_response.txt') as text_file:
             hiscore_response = text_file.read()
-        self.mock_hiscore_url = requests_mock.get('https://test.com/test_user',
+        self.mock_hiscore_url = requests_mock.get(
+            'https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws?player=test_user',
             text=hiscore_response
             )
          
 
 @pytest.fixture
-def test_API_Request_Object(requests_mock):
-    return ApiRequest('https://test.com')
-
-@pytest.fixture
 def mockAPI(requests_mock): 
     return MockAPI(requests_mock)
-   
-
-@pytest.mark.parametrize(
-    'url,response', [
-        ('/404', 404), ('/json', {'abc': 'def'}), ('/text', 'resp'),
-        ('/timeout', 'timeout')
-        ]
-    )
-def test_API_Request_Class(test_API_Request_Object, mockAPI, url, response):
-    assert test_API_Request_Object.GET(url) == response
+    
 
 @pytest.mark.parametrize(
     "item,result",[
@@ -94,6 +81,6 @@ def test_tracker_message(mockAPI):
     assert isinstance(tracker_message, str) == True
 
 
-def test_hiscore_message(test_API_Request_Object, mockAPI):
-    hiscore_message = se.hiscore_message(test_API_Request_Object, 'All', '/test_user')
+def test_hiscore_message(mockAPI):
+    hiscore_message = se.hiscore_message('All', 'test_user')
     assert isinstance(hiscore_message, str) == True
