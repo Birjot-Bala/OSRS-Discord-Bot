@@ -1,6 +1,6 @@
 # constants.py
 
-EXCHANGE_URL = 'https://rsbuddy.com/exchange'
+EXCHANGE_BASE_URL = 'https://rsbuddy.com/exchange/'
 WISE_BASE_URL = 'https://wiseoldman.net/api/'
 HISCORE_BASE_URL = 'https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws'
 WIKI_BASE_URL = 'https://oldschool.runescape.wiki/w/'

@@ -19,7 +19,7 @@ class MockAPI:
         self.mock_json_url = requests_mock.get('https://test.com/json', json= {'abc': 'def'})
         self.mock_text_url = requests_mock.get('https://test.com/text', text='resp')
         self.mock_timeout_url = requests_mock.get('https://test.com/timeout', exc=Timeout)
-        self.mock_exchange_url = requests_mock.get('https://test.com/summary.json', 
+        self.mock_exchange_url = requests_mock.get('https://rsbuddy.com/exchange/summary.json', 
             json={
                 "4151":{"id":4151,"name":"Abyssal whip","members":True,
                 "sp":120001,"buy_average":2864609,"buy_quantity":12,
@@ -68,10 +68,10 @@ def test_search_items(item, result):
     num = 1
     assert se.search_items(item, num) == result
 
-def test_search_price(test_API_Request_Object, mockAPI):
+def test_search_price(mockAPI):
     test_Response = {'4151':{'name':'Abyssal whip', 'buyPrice':2864609, 'sellPrice':2859858, 'margin':4751}}
     test_itemDict = se.search_items('Abyssal whip',1)[0]
-    assert se.search_price(test_itemDict, test_API_Request_Object) == test_Response
+    assert se.search_price(test_itemDict) == test_Response
 
 @pytest.mark.parametrize(
     "chance,actions,message", [
@@ -84,8 +84,8 @@ def test_chance_message(chance, actions, message):
     assert se.chance_message(chance, actions) == message
     
 
-def test_ge_message(test_API_Request_Object, mockAPI):
-    ge_message = se.ge_message(test_API_Request_Object, 'Abyssal whip')
+def test_ge_message(mockAPI):
+    ge_message = se.ge_message('Abyssal whip')
     assert isinstance(ge_message, str) == True
 
 

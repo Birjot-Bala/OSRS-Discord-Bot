@@ -24,7 +24,7 @@ import formatter_discord as f
 
 from osrsbox import items_api
 from constants import (
-    SKILL_NAMES, WIKI_BASE_URL, WISE_BASE_URL, EXCHANGE_URL, HISCORE_BASE_URL
+    SKILL_NAMES, WIKI_BASE_URL, WISE_BASE_URL, EXCHANGE_BASE_URL, HISCORE_BASE_URL
 )
 
 ALL_DB_ITEMS = items_api.load()
@@ -66,18 +66,19 @@ class ApiRequest:
             return response
 
 
-def search_price(itemDict, ApiRequest):
-    """Searches for the prices using the GE API.
+def search_price(itemDict):
+    """Searches for the prices using the Exchange API.
 
     Args:
         itemDict (dict): Key, value of item ids, item names.
     
     """
     # search prices using OSBuddy Exchange
-    ge_prices = ApiRequest.GET('/summary.json')
+    ge_prices = get_response(EXCHANGE_BASE_URL, "summary.json")
+    ge_prices_dict = ge_prices.json()
     for key in itemDict:
         try:
-            singleItem = ge_prices[key]
+            singleItem = ge_prices_dict[key]
             buyPrice, sellPrice = singleItem['buy_average'], singleItem['sell_average']
             margin = buyPrice - sellPrice
             buyPrice, sellPrice, margin = f.formatNumbers(buyPrice, sellPrice, margin)
@@ -140,7 +141,7 @@ def hiscore_message(HiscoreApi, skill, *args):
     return hiscore_message 
 
 
-def ge_message(GEApi, *args):
+def ge_message(*args):
     item = ' '.join(args)
     if len(item) < 3:
         ge_message = 'Please be more specific.'
@@ -151,7 +152,7 @@ def ge_message(GEApi, *args):
         else:
             ge_message_header = f.formatDiscord(f'{"Item":<40s}{"Offer Price":>15s}{"Sell Price":>15s}{"Margin":>15s}')
             ge_message_body = ''
-            itemPrices = search_price(foundItems, GEApi)
+            itemPrices = search_price(foundItems)
             for key in itemPrices:
                 singleItem = itemPrices[key]
                 ge_message_body = (ge_message_body + 
@@ -195,8 +196,6 @@ def _parse_tracker_response(delta_dict):
     return tracker_message
 
 
-
 # initializing class instances for APIs being used
 Hiscores = ApiRequest(HISCORE_BASE_URL)
-GrandExchange = ApiRequest(EXCHANGE_URL)
 Wiki = ApiRequest(WIKI_BASE_URL)

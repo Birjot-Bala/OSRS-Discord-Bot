@@ -6,7 +6,7 @@ import locale
 
 import services as se
 
-from services import WiseOldMan, Hiscores, GrandExchange, Wiki
+from services import Hiscores, Wiki
 from dotenv import load_dotenv
 from discord.ext import commands
 
@@ -36,7 +36,7 @@ async def hiscore(ctx, skill, *args):
 # !ge X posts GE price information of first 10 items that include X
 @bot.command(name='ge', help='Posts GE price of items')
 async def ge(ctx, *args):
-    ge_message = se.ge_message(GrandExchange, *args)
+    ge_message = se.ge_message(*args)
     await ctx.send(ge_message)
         
 # !wiki X posts a link to the wiki for X
