@@ -57,7 +57,7 @@ async def chance(ctx, droprate, actions=None):
 
 @bot.command(name='tracker', help='Uses the Wise Old Man API to track XP gains. !tracker (period) (username). Periods can be day, week, month or year.')
 async def tracker(ctx, period, *args):
-    tracker_message = se.tracker_message(WiseOldMan, period, *args)
+    tracker_message = se.tracker_message(period, *args)
     await ctx.send(tracker_message)
 
     

@@ -5,6 +5,8 @@ import csv
 import re
 import string
 
+from constants import SKILL_NAMES
+
 def formatSearch(s):
     s = s.lower()
     s = s.replace(' ','')
@@ -31,20 +33,20 @@ def formatDiscord(message):
     return formMessage
 
 
-def formatHiscore(username, skill, skill_name, response):
+def formatHiscore(username, skill, response):
     # format the response from OSRS Hiscore API
     splitLines = response.splitlines()
     reader = csv.reader(splitLines)
     skills = list(reader)
-    skill_dict = dict(zip(skill_name, skills))
+    skill_dict = dict(zip(SKILL_NAMES, skills))
     hiscore_message_header = formatDiscord(f'{username:<15s}{"Level":>10s}{"XP":>15s}')
     hiscore_message_body = ''
-    if skill == 'All':
+    if skill == 'all':
         for s in skill_dict:
             hiscore_message_body = hiscore_message_body +\
-                 f'\n{s:<15s}{skill_dict[s][1]:>10s}{int(skill_dict[s][2]):>15n}'
+                 f'\n{s.capitalize():<15s}{skill_dict[s][1]:>10s}{int(skill_dict[s][2]):>15n}'
     else:  
         hiscore_message_body = hiscore_message_body +\
-             f'\n{skill:<15s}{skill_dict[skill][1]:>10s}{int(skill_dict[skill][2]):>15n}'
+             f'\n{skill.capitalize():<15s}{skill_dict[skill][1]:>10s}{int(skill_dict[skill][2]):>15n}'
     hiscore_message = hiscore_message_header + formatDiscord(hiscore_message_body)
     return hiscore_message

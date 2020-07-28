@@ -30,7 +30,7 @@ class MockAPI:
         with open('test/wise_response.json') as json_file:
             wise_response = json.load(json_file)
         self.mock_tracker_url = requests_mock.get(
-            'https://test.com/players/username/test/gained?period=test',
+            'https://wiseoldman.net/api/players/username/test/gained?period=test',
             json=wise_response
             )
         with open('test/hiscore_response.txt') as text_file:
@@ -58,11 +58,15 @@ def mockAPI(requests_mock):
 def test_API_Request_Class(test_API_Request_Object, mockAPI, url, response):
     assert test_API_Request_Object.GET(url) == response
 
-def test_search_items():
-    num = 10
-    assert se.search_items('1321931', num) == ({}, False)
-    assert len(se.search_items('a', num)[0]) == num
-    assert se.search_items('Blood Rune', 1)[0] == {'565':'Blood rune'}
+@pytest.mark.parametrize(
+    "item,result",[
+        ("1321931",({}, False)),
+        ("Blood Rune", ({'565':'Blood rune'}, True))
+    ]
+)
+def test_search_items(item, result):
+    num = 1
+    assert se.search_items(item, num) == result
 
 def test_search_price(test_API_Request_Object, mockAPI):
     test_Response = {'4151':{'name':'Abyssal whip', 'buyPrice':2864609, 'sellPrice':2859858, 'margin':4751}}
@@ -74,8 +78,8 @@ def test_search_price(test_API_Request_Object, mockAPI):
         ('1/100', 100, r'63.40% chance of getting the drop within 100 actions.'),
         ('1/100', None, 'Please enter the number of actions.'),
         ('abc', None, 'Please enter drop rates in fractions or decimals and actions in integers.')
-        ]
-    )
+    ]
+)
 def test_chance_message(chance, actions, message):
     assert se.chance_message(chance, actions) == message
     
@@ -85,8 +89,8 @@ def test_ge_message(test_API_Request_Object, mockAPI):
     assert isinstance(ge_message, str) == True
 
 
-def test_tracker_message(test_API_Request_Object, mockAPI):
-    tracker_message = se.tracker_message(test_API_Request_Object, 'test', 'test')
+def test_tracker_message(mockAPI):
+    tracker_message = se.tracker_message('test', 'test')
     assert isinstance(tracker_message, str) == True
 
 

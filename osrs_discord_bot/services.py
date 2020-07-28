@@ -16,17 +16,29 @@ Functions:
 """
 
 import requests
+from requests.compat import urljoin
+from requests.exceptions import Timeout
 
 import formatter_discord as f
 
 
 from osrsbox import items_api
-from requests.exceptions import Timeout
 from constants import (
     SKILL_NAMES, WIKI_BASE_URL, WISE_BASE_URL, EXCHANGE_URL, HISCORE_BASE_URL
 )
 
 ALL_DB_ITEMS = items_api.load()
+
+def get_response(base_url, path, params=None, timeout=5):
+    try:
+        resp = requests.get(
+            urljoin(base_url, path),
+            params=params,
+            timeout=timeout
+        )
+        return resp
+    except Timeout:
+        return 'timeout'
 
 class ApiRequest:
 
@@ -59,7 +71,6 @@ def search_price(itemDict, ApiRequest):
 
     Args:
         itemDict (dict): Key, value of item ids, item names.
-        
     
     """
     # search prices using OSBuddy Exchange
@@ -91,6 +102,7 @@ def search_items(query, num):
                 break
     return itemDict, maxIter_flag
     
+
 def chance_message(droprate, actions=None):
     if droprate.find('/') != -1:  # if fraction given convert to float
         droprate = f.fraction2Float(droprate)
@@ -114,8 +126,7 @@ def chance_message(droprate, actions=None):
 def hiscore_message(HiscoreApi, skill, *args):
     username = ' '.join(args)
     skill = skill.lower()
-    skill = skill.capitalize()
-    if username == '' or skill not in SKILL_NAMES + ['All']:
+    if username == '' or skill not in SKILL_NAMES + ['all']:
         hiscore_message = 'Please enter a skill or all before the username.'
     else:
     # request data from OSRS Hiscores
@@ -125,7 +136,7 @@ def hiscore_message(HiscoreApi, skill, *args):
         elif response == 'timeout':
             hiscore_message = 'The request to OSRS Hiscores timed out.'
         else:
-            hiscore_message = f.formatHiscore(username, skill, SKILL_NAMES, response)
+            hiscore_message = f.formatHiscore(username, skill, response)
     return hiscore_message 
 
 
@@ -153,25 +164,36 @@ def ge_message(GEApi, *args):
     return ge_message
 
 
-def tracker_message(WiseApi, period, *args):
+def tracker_message(period, *args):
     tracker_message = ''
     username = ' '.join(args)
-    delta_response = WiseApi.GET(f'/players/username/{username}/gained?period={period}')
-    if 'message' in delta_response:
+    delta_response = get_response(
+        WISE_BASE_URL,
+        f'players/username/{username}/gained',
+        params={"period":period}
+    )
+    delta_dict = delta_response.json()
+    if 'message' in delta_dict:
         tracker_message = f'Player {username} does not exist on Wise Old Man XP Tracker.'
     else:
-        for skill in delta_response['data']:
-            gains = delta_response['data'][skill]['experience']['gained']
-            if gains > 0:
-                tracker_message = (tracker_message + 
-                f'\n{skill.capitalize():<20s}{gains:n}')
-            if skill == "construction":
-                break
+        tracker_message = parse_tracker_response(delta_dict)
         if tracker_message == '':
             tracker_message = 'No gains in the specified period.'   
         else:
             tracker_message = f'```{"Skill":<20s}Experience```' + f.formatDiscord(tracker_message)
     return tracker_message
+
+def parse_tracker_response(delta_dict):
+    tracker_message = ""
+    filtered_dict = {key:value for key, value in delta_dict["data"].items() if key in SKILL_NAMES}
+    for skill in filtered_dict:
+        gained = filtered_dict[skill]["experience"]["gained"]
+        if gained > 0:
+            tracker_message = (tracker_message + 
+            f'\n{skill.capitalize():<20s}{gained:n}')
+    return tracker_message
+
+
 
 # initializing class instances for APIs being used
 WiseOldMan = ApiRequest(WISE_BASE_URL)
