@@ -5,7 +5,7 @@ import csv
 import re
 import string
 
-from constants import SKILL_NAMES
+from osrs_discord_bot.constants import SKILL_NAMES
 
 def formatSearch(s):
     s = s.lower()

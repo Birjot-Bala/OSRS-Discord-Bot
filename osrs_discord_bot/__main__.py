@@ -2,11 +2,11 @@
 
 import os
 import locale
-
-import services as se
-
 from dotenv import load_dotenv
+
 from discord.ext import commands
+
+import osrs_discord_bot.services as se
 
 locale.setlocale(locale.LC_ALL, '')
 load_dotenv()

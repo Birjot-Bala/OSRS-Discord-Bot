@@ -20,12 +20,10 @@ import requests
 from requests.compat import urljoin
 from requests.exceptions import Timeout
 
-
-import formatter_discord as f
-
-
 from osrsbox import items_api
-from constants import (
+
+import osrs_discord_bot.formatter_discord as f
+from osrs_discord_bot.constants import (
     SKILL_NAMES, WIKI_BASE_URL, WISE_BASE_URL, EXCHANGE_BASE_URL, HISCORE_BASE_URL
 )
 
