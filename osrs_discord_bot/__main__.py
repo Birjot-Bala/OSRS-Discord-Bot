@@ -1,18 +1,14 @@
 # osrs_discord_bot.py
 
-import os
 import locale
-from dotenv import load_dotenv
 
 from discord.ext import commands
 
 import osrs_discord_bot.services as se
+from osrs_discord_bot.settings import TOKEN
+
 
 locale.setlocale(locale.LC_ALL, '')
-load_dotenv()
-
-# acquiring the bot token from environment variables
-TOKEN = os.getenv('DISCORD_TOKEN')
 
 
 # selected prefix for discord commands
