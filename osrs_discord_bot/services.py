@@ -1,5 +1,3 @@
-# services.py
-
 """Contains logic for sending requests and output messages.
 
 Classes:
@@ -12,6 +10,7 @@ Functions:
     hiscore_message
     ge_message
     tracker_message
+    wiki_message
 
 """
 
@@ -31,6 +30,18 @@ from osrs_discord_bot.constants import (
 ALL_DB_ITEMS = items_api.load()
 
 def get_response(base_url, path=None, params=None, timeout=5):
+    """Sends a get request to the URL provided.
+
+    The request timesout if the reponse takes longer than 5 seconds.
+    
+    Args:
+        base_url (str): Base URL.
+        path (str): Path from base URL.
+        params (dict): key:value of param:value, defaults to None.
+        timeout (int): Seconds until request is timed out, defaults to 5.
+    
+    """
+
     try:
         resp = requests.get(
             urljoin(base_url, path),
@@ -47,9 +58,12 @@ def search_price(item_dict):
 
     Args:
         item_dict (dict): Key, value of item ids, item names.
+
+    Returns:
+        Dictionary with prices from OSBuddy Exchange.
     
     """
-    # search prices using OSBuddy Exchange
+
     ge_prices = get_response(EXCHANGE_BASE_URL, "summary.json")
     ge_prices_dict = ge_prices.json()
     for key in item_dict:
@@ -70,6 +84,17 @@ def search_price(item_dict):
 
 
 def search_items(query, num):
+    """Searches for items in the osrsbox database.
+
+    Args:
+        query (str): Name of item.
+        num (int): Number of results to return.
+
+    Returns:
+        Dictionary of item id and name as well as number of items found.
+    
+    """
+
     # search osrsbox items list for query
     item_dict = {}
     counter = 0
@@ -89,6 +114,17 @@ def search_items(query, num):
     
 
 def chance_message(droprate, actions=None):
+    """Creates the message response for the chance command.
+
+    Args:
+        droprate (int|float): Drop rate.
+        actions (int): Number of actions.
+
+    Retuns:
+        String message response to be sent to the client.
+    
+    """
+
     if droprate.find('/') != -1:  # if fraction given convert to float
         droprate = f.fraction2Float(droprate)
 
@@ -115,6 +151,17 @@ def chance_message(droprate, actions=None):
 
 
 def hiscore_message(skill, *args):
+    """Creates the message response for the hiscore command.
+
+    Args:
+        skill (str): The skill to lookup.
+        *args (str): Username.
+    
+    Returns:
+        String message response to be sent to the client.
+
+    """
+
     username = ' '.join(args)
     skill = skill.lower()
     if username == '' or skill not in SKILL_NAMES + ['all']:
@@ -133,6 +180,16 @@ def hiscore_message(skill, *args):
 
 
 def ge_message(*args):
+    """Creates the message response for the ge command.
+
+    Args:
+        *args (str): Item to look up the price for.
+
+    Returns:
+        String message response to be sent to the client.
+    
+    """
+
     item = ' '.join(args)
     if len(item) < 3:
         ge_message = 'Please be more specific.'
@@ -154,6 +211,16 @@ def ge_message(*args):
 
 
 def tracker_message(period, *args):
+    """Creates the message response for the tracker command.
+
+    Args:
+        period (str): Time period to look at xp gained for.
+        *args (str): Username.
+
+    Returns:
+        String message response to be sent to the client.
+    
+    """
     tracker_message = ''
     username = ' '.join(args)
     delta_response = get_response(
@@ -179,6 +246,16 @@ def tracker_message(period, *args):
 
 
 def wiki_message(*args):
+    """Creates the messages response for the wiki command.
+
+    Args:
+        *args (str): Query to search the wiki for.
+
+    Returns:
+        String message to be sent to the client.
+    
+    """
+
     subject = '_'.join(args)
     if get_response(WIKI_BASE_URL, path=subject).status_code == 404:
         wiki_message = 'OSRS Wiki article with that title does not exist.'

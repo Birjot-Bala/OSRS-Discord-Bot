@@ -1,4 +1,11 @@
 # osrs_discord_bot.py
+"""Entry point module.
+
+Functions:
+    run_bot
+    main
+    
+"""
 
 import locale
 

@@ -1,4 +1,14 @@
-# bot.py
+"""Creating a bot instance and adding commands.
+
+Functions:
+    on_ready
+    hiscore
+    ge
+    wiki
+    chance
+    tracker
+
+"""
 
 from discord.ext import commands
 
