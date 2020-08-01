@@ -24,7 +24,8 @@ from osrsbox import items_api
 
 import osrs_discord_bot.formatter_discord as f
 from osrs_discord_bot.constants import (
-    SKILL_NAMES, WIKI_BASE_URL, WISE_BASE_URL, EXCHANGE_BASE_URL, HISCORE_BASE_URL
+    SKILL_NAMES, WIKI_BASE_URL, WISE_BASE_URL, EXCHANGE_BASE_URL, 
+    HISCORE_BASE_URL
 )
 
 ALL_DB_ITEMS = items_api.load()
@@ -54,12 +55,17 @@ def search_price(item_dict):
     for key in item_dict:
         try:
             single_item = ge_prices_dict[key]
-            buyPrice, sellPrice = single_item['buy_average'], single_item['sell_average']
-            margin = buyPrice - sellPrice
-            buyPrice, sellPrice, margin = f.formatNumbers(buyPrice, sellPrice, margin)
+            buy_price = single_item['buy_average']
+            sell_price = single_item['sell_average']
+            margin = buy_price - sell_price
+            buy_price, sell_price, margin = f.formatNumbers(
+                buy_price, sell_price, margin
+            )
         except KeyError:
-            buyPrice, sellPrice, margin = 'N/A', 'N/A', 'N/A'
-        item_dict[key] = {'name':item_dict[key], 'buyPrice':buyPrice, 'sellPrice':sellPrice, 'margin':margin}
+            buy_price, sell_price, margin = 'N/A', 'N/A', 'N/A'
+        item_dict[key] = {'name':item_dict[key], 'buy_price':buy_price, 
+            'sell_price':sell_price, 'margin':margin
+        }
     return item_dict
 
 
@@ -69,8 +75,11 @@ def search_items(query, num):
     counter = 0
     max_iter_flag = False
     for item in ALL_DB_ITEMS:
-        if (f.formatSearch(query) in f.formatSearch(item.name) and 
-        item.tradeable_on_ge == True and item.noted == False and item.placeholder == False):
+        if (f.formatSearch(query) in f.formatSearch(item.name) 
+            and item.tradeable_on_ge == True 
+            and item.noted == False 
+            and item.placeholder == False
+        ):
             item_dict[str(item.id)] = item.name
             counter += 1
             if counter == num:
@@ -87,7 +96,10 @@ def chance_message(droprate, actions=None):
         droprate = float(droprate)
         actions = int(actions)
     except ValueError:
-        chance_message = 'Please enter drop rates in fractions or decimals and actions in integers.'
+        chance_message = (
+            'Please enter the drop rate as a fraction '
+            'or decimal and the number of actions as an integer.'
+        )
     except TypeError:
         chance_message = 'Please enter the number of actions.'
 
@@ -95,7 +107,10 @@ def chance_message(droprate, actions=None):
         no_drop = (1 - droprate)**actions
         yes_drop = 1 - no_drop
         percent = yes_drop * 100
-        chance_message = f'{percent:.2f}% chance of getting the drop within {actions} actions.'
+        chance_message = (
+            f'{percent:.2f}% chance of getting '
+            f'the drop within {actions} actions.'
+        )
     return chance_message
 
 
@@ -108,7 +123,8 @@ def hiscore_message(skill, *args):
     # request data from OSRS Hiscores
         response = get_response(HISCORE_BASE_URL, params={"player":username})
         if response.status_code == 404:
-            hiscore_message = f'Player {username} does not exist or OSRS Hiscores are down.'
+            hiscore_message = (f'Player {username} does not '
+            f'exist or OSRS Hiscores are down.')
         elif response == 'timeout':
             hiscore_message = 'The request to OSRS Hiscores timed out.'
         else:
@@ -125,9 +141,14 @@ def ge_message(*args):
         if foundItems == {}:
             ge_message = 'No item named' + ' "' + item + '" ' + 'found on GE.'
         else:
-            ge_message_header = f.formatDiscord(f'{"Item":<40s}{"Offer Price":>15s}{"Sell Price":>15s}{"Margin":>15s}')
+            ge_message_header = f.formatDiscord(
+                f'{"Item":<40s}{"Offer Price":>15s}'
+                f'{"Sell Price":>15s}{"Margin":>15s}'
+            )
             prices_dict = search_price(foundItems)
-            ge_message_body = f.formatDiscord(_parse_ge_response(prices_dict, max_iter_flag))
+            ge_message_body = f.formatDiscord(
+                _parse_ge_response(prices_dict, max_iter_flag)
+            )
             ge_message = ge_message_header + ge_message_body
     return ge_message
 
@@ -142,13 +163,18 @@ def tracker_message(period, *args):
     )
     delta_dict = delta_response.json()
     if 'message' in delta_dict:
-        tracker_message = f'Player {username} does not exist on Wise Old Man XP Tracker.'
+        tracker_message = (
+            f'Player {username} does not '
+            f'exist on Wise Old Man XP Tracker.'
+        )
     else:
         tracker_message = _parse_tracker_response(delta_dict)
         if tracker_message == '':
             tracker_message = 'No gains in the specified period.'   
         else:
-            tracker_message = f'```{"Skill":<20s}Experience```' + f.formatDiscord(tracker_message)
+            tracker_message = (f'```{"Skill":<20s}Experience```' 
+                + f.formatDiscord(tracker_message)
+            )
     return tracker_message
 
 
@@ -163,7 +189,10 @@ def wiki_message(*args):
 
 def _parse_tracker_response(delta_dict):
     tracker_message = ""
-    filtered_dict = {key:value for key, value in delta_dict["data"].items() if key in SKILL_NAMES}
+    filtered_dict = {key:value 
+        for key, value in delta_dict["data"].items() 
+        if key in SKILL_NAMES
+    }
     for skill in filtered_dict:
         gained = filtered_dict[skill]["experience"]["gained"]
         if gained > 0:
@@ -177,9 +206,10 @@ def _parse_ge_response(prices_dict, max_iter_flag):
     for key in prices_dict:
         single_item = prices_dict[key]
         ge_message_body = (ge_message_body + 
-        f'\n{single_item["name"]:<40s}{single_item["buyPrice"]:>15n}'
-        f'{single_item["sellPrice"]:>15n}{single_item["margin"]:>15n}')
+        f'\n{single_item["name"]:<40s}{single_item["buy_price"]:>15n}'
+        f'{single_item["sell_price"]:>15n}{single_item["margin"]:>15n}')
     if max_iter_flag == True:
         ge_message_body = (ge_message_body +
-        '\n\nShowing the first 10 results only. Please refine the search if the item is not listed.')
+        '\n\nShowing the first 10 results only.'
+        ' Please refine the search if the item is not listed.')
     return ge_message_body     

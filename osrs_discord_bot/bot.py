@@ -36,7 +36,9 @@ async def wiki(ctx, *args):
 
 @bot.command(
     name='chance',
-    help='Calculates the percent chance of getting a drop within a set number of actions.'
+    help=('Calculates the percent chance of getting a drop '
+        'within a set number of actions.'
+    )
 )
 #!chance X, Y calculates the chance of hitting the X drop rate in Y actions
 async def chance(ctx, droprate, actions=None):
