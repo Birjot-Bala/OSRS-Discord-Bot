@@ -14,28 +14,35 @@ class MockAPI:
     def __init__(self, requests_mock):
         
         self.mock_base_url = requests_mock.get('https://test.com')
-        self.mock_404_url = requests_mock.get('https://test.com/404', text='Not Found', status_code=404)
-        self.mock_json_url = requests_mock.get('https://test.com/json', json= {'abc': 'def'})
-        self.mock_text_url = requests_mock.get('https://test.com/text', text='resp')
-        self.mock_timeout_url = requests_mock.get('https://test.com/timeout', exc=Timeout)
-        self.mock_exchange_url = requests_mock.get('https://rsbuddy.com/exchange/summary.json', 
+        self.mock_404_url = requests_mock.get('https://test.com/404', 
+            text='Not Found', status_code=404)
+        self.mock_json_url = requests_mock.get('https://test.com/json', 
+            json= {'abc': 'def'})
+        self.mock_text_url = requests_mock.get('https://test.com/text', 
+            text='resp')
+        self.mock_timeout_url = requests_mock.get('https://test.com/timeout', 
+            exc=Timeout)
+        self.mock_exchange_url = requests_mock.get(
+            'https://rsbuddy.com/exchange/summary.json', 
             json={
                 "4151":{"id":4151,"name":"Abyssal whip","members":True,
                 "sp":120001,"buy_average":2864609,"buy_quantity":12,
-                "sell_average":2859858,"sell_quantity":10,"overall_average":2862450,
-                "overall_quantity":22}
+                "sell_average":2859858,"sell_quantity":10,
+                "overall_average":2862450,"overall_quantity":22}
                 }
             )
         with open('test/wise_response.json') as json_file:
             wise_response = json.load(json_file)
         self.mock_tracker_url = requests_mock.get(
-            'https://wiseoldman.net/api/players/username/test/gained?period=test',
+            'https://wiseoldman.net/api/players/username/test/'
+            'gained?period=test',
             json=wise_response
             )
         with open('test/hiscore_response.txt') as text_file:
             hiscore_response = text_file.read()
         self.mock_hiscore_url = requests_mock.get(
-            'https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws?player=test_user',
+            'https://secure.runescape.com/m=hiscore_oldschool/'
+            'index_lite.ws?player=test_user',
             text=hiscore_response
             )
          
@@ -56,7 +63,9 @@ def test_search_items(item, result):
     assert se.search_items(item, num) == result
 
 def test_search_price(mockAPI):
-    test_Response = {'4151':{'name':'Abyssal whip', 'buy_price':2864609, 'sell_price':2859858, 'margin':4751}}
+    test_Response = {'4151':{'name':'Abyssal whip', 'buy_price':2864609, 
+        'sell_price':2859858, 'margin':4751}
+    }
     test_itemDict = se.search_items('Abyssal whip',1)[0]
     assert se.search_price(test_itemDict) == test_Response
 
