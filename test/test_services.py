@@ -56,7 +56,7 @@ def test_search_items(item, result):
     assert se.search_items(item, num) == result
 
 def test_search_price(mockAPI):
-    test_Response = {'4151':{'name':'Abyssal whip', 'buyPrice':2864609, 'sellPrice':2859858, 'margin':4751}}
+    test_Response = {'4151':{'name':'Abyssal whip', 'buy_price':2864609, 'sell_price':2859858, 'margin':4751}}
     test_itemDict = se.search_items('Abyssal whip',1)[0]
     assert se.search_price(test_itemDict) == test_Response
 
@@ -64,7 +64,8 @@ def test_search_price(mockAPI):
     "chance,actions,message", [
         ('1/100', 100, r'63.40% chance of getting the drop within 100 actions.'),
         ('1/100', None, 'Please enter the number of actions.'),
-        ('abc', None, 'Please enter drop rates in fractions or decimals and actions in integers.')
+        ('abc', None, 'Please enter the drop rate as a fraction '
+            'or decimal and the number of actions as an integer.')
     ]
 )
 def test_chance_message(chance, actions, message):
