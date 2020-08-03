@@ -64,7 +64,7 @@ def search_price(item_dict):
     
     """
 
-    ge_prices = get_response(EXCHANGE_BASE_URL, "summary.json")
+    ge_prices = get_response(EXCHANGE_BASE_URL, "/exchange/summary.json")
     ge_prices_dict = ge_prices.json()
     for key in item_dict:
         try:
@@ -168,7 +168,9 @@ def hiscore_message(skill, *args):
         hiscore_message = 'Please enter a skill or all before the username.'
     else:
     # request data from OSRS Hiscores
-        response = get_response(HISCORE_BASE_URL, params={"player":username})
+        response = get_response(HISCORE_BASE_URL, 
+            '/m=hiscore_oldschool/index_lite.ws',  params={"player":username}
+        )
         if response.status_code == 404:
             hiscore_message = (f'Player {username} does not '
             f'exist or OSRS Hiscores are down.')
@@ -225,7 +227,7 @@ def tracker_message(period, *args):
     username = ' '.join(args)
     delta_response = get_response(
         WISE_BASE_URL,
-        f'players/username/{username}/gained',
+        f'/api/players/username/{username}/gained',
         params={"period":period}
     )
     delta_dict = delta_response.json()
@@ -257,10 +259,10 @@ def wiki_message(*args):
     """
 
     subject = '_'.join(args)
-    if get_response(WIKI_BASE_URL, path=subject).status_code == 404:
+    if get_response(WIKI_BASE_URL, path='/w/'+subject).status_code == 404:
         wiki_message = 'OSRS Wiki article with that title does not exist.'
     else:
-        wiki_message = urljoin(WIKI_BASE_URL, subject)
+        wiki_message = urljoin(WIKI_BASE_URL, '/w/' + subject)
     return wiki_message
 
 
@@ -290,3 +292,6 @@ def _parse_ge_response(prices_dict, max_iter_flag):
         '\n\nShowing the first 10 results only.'
         ' Please refine the search if the item is not listed.')
     return ge_message_body     
+
+def get_trends():
+    pass
