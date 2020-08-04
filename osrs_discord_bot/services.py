@@ -11,6 +11,10 @@ Functions:
     ge_message
     tracker_message
     wiki_message
+    get_trend_data
+    parse_trend_data
+    plot_graph
+    name_to_id
 
 """
 
