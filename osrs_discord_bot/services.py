@@ -18,18 +18,18 @@ import string
 import requests
 import time
 import datetime
+import io
+
 from requests.compat import urljoin
 from requests.exceptions import Timeout
-
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdate
 from osrsbox import items_api
 
 import osrs_discord_bot.formatter_discord as f
-from osrs_discord_bot.settings import GE_TRACKER_TOKEN
 from osrs_discord_bot.constants import (
     SKILL_NAMES, WIKI_BASE_URL, WISE_BASE_URL, EXCHANGE_BASE_URL, 
-    HISCORE_BASE_URL, GE_TRACKER_BASE_URL
+    HISCORE_BASE_URL
 )
 
 ALL_DB_ITEMS = items_api.load()
@@ -301,16 +301,16 @@ def _parse_ge_response(prices_dict, max_iter_flag):
     return ge_message_body     
 
 def get_trend_data(item_id, period='month'):
-    path = f'/api/graph/{item_id}/{period}'
-    headers = {'Authorization' : GE_TRACKER_TOKEN}
-    resp = get_response(GE_TRACKER_BASE_URL, path=path, headers=headers)
+    period_dict = {'week':180, 'month':1440, 'quarter':4320}
+    path = f'/exchange/graphs/{period_dict[period]}/{item_id}.json'
+    resp = get_response(EXCHANGE_BASE_URL, path=path)
     return resp.json()
 
 # data time is in milliseconds and points are daily
 def parse_trend_data(resp_dict):
     x = []
     y = []
-    for i in resp_dict['data']:
+    for i in resp_dict:
         x.append(datetime.datetime.fromtimestamp(i['ts']/1000))
         y.append(i['overallPrice'])
         # print(time.strftime('%Y-%m-%d', time.localtime(i['ts']/1000)),
@@ -318,8 +318,31 @@ def parse_trend_data(resp_dict):
         # )
     return mdate.date2num(x), y
 
-def plot_graph(x,y):
-    plt.plot_date(x,y, fmt='-')
-    plt.xlabel('Time')
+def plot_graph(item_id, x, y):
+    item = ALL_DB_ITEMS.lookup_by_item_id(int(item_id))
+
+    fig, ax = plt.subplots()
+    plt.subplots_adjust(bottom=0.25)
+    plt.plot_date(x,y, fmt='o-')
+    plt.xlabel('Date')
     plt.ylabel('Price')
-    plt.show()
+    plt.title(item.name)
+    ax.xaxis.set_tick_params(rotation=30)
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    return buf
+
+def name_to_id(item_name):
+    item_dict, max_items_flag = search_items(item_name, 10)
+    if item_dict == {}:
+        return "No item found with that name."
+    else:
+        message_dict = [
+            f'ID: {item_id:<10} Name: {item_name:<10}' 
+            for item_id, item_name in item_dict.items()
+        ]
+        if max_items_flag:
+            message_dict.append('\nShowing first 10 results.')
+        name_to_id_message = f.formatDiscord('\n'.join(message_dict))
+        return name_to_id_message

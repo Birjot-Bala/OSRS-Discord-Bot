@@ -9,10 +9,12 @@ Functions:
     tracker
 
 """
-
+import discord
 from discord.ext import commands
+from json.decoder import JSONDecodeError
 
 import osrs_discord_bot.services as se
+
 
 
 bot = commands.Bot(command_prefix='!')
@@ -63,3 +65,24 @@ async def chance(ctx, droprate, actions=None):
 async def tracker(ctx, period, *args):
     tracker_message = se.tracker_message(period, *args)
     await ctx.send(tracker_message)
+
+
+@bot.command(name='trend', 
+    help='Shows the trend of the item price for the period.'
+)
+async def trend(ctx, item_id, period='month'):
+    try:
+        x, y = se.parse_trend_data(se.get_trend_data(item_id, period=period))
+        await ctx.send(
+            file=discord.File(se.plot_graph(item_id, x, y), 'trend.png')
+        )
+    except JSONDecodeError:
+        await ctx.send("Error. Something went wrong. Check the id and period.")
+
+
+@bot.command(name='id',
+    help='Search the database for the item id.'
+)
+async def name_to_id(ctx, item_name):
+    await ctx.send(se.name_to_id(item_name))
+

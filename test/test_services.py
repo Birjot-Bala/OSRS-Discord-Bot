@@ -94,3 +94,8 @@ def test_tracker_message(mockAPI):
 def test_hiscore_message(mockAPI):
     hiscore_message = se.hiscore_message('All', 'test_user')
     assert isinstance(hiscore_message, str) == True
+
+
+def test_name_to_id():
+    assert isinstance(se.name_to_id('Abyssal whip'), str) == True
+
