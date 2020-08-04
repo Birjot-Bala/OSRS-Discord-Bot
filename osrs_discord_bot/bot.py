@@ -77,7 +77,7 @@ async def trend(ctx, item_id, period='month'):
             file=discord.File(se.plot_graph(item_id, x, y), 'trend.png')
         )
     except JSONDecodeError:
-        await ctx.send("Error. Something went wrong. Check the id and period.")
+        await ctx.send("Something went wrong. Check the id and period.")
 
 
 @bot.command(name='id',
