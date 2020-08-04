@@ -83,6 +83,7 @@ async def trend(ctx, item_id, period='month'):
 @bot.command(name='id',
     help='Search the database for the item id.'
 )
-async def name_to_id(ctx, item_name):
+async def name_to_id(ctx, *args):
+    item_name = ' '.join(args)
     await ctx.send(se.name_to_id(item_name))
 
