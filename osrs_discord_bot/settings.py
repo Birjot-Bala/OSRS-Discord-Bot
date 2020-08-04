@@ -6,4 +6,5 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TOKEN = os.getenv('DISCORD_TOKEN')
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+GE_TRACKER_TOKEN = os.getenv('GE_TRACKER_TOKEN')

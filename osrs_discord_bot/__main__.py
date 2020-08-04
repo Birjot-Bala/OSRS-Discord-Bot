@@ -9,7 +9,7 @@ Functions:
 
 import locale
 
-from osrs_discord_bot.settings import TOKEN
+from osrs_discord_bot.settings import DISCORD_TOKEN
 from osrs_discord_bot.bot import bot
 
 
@@ -17,7 +17,7 @@ locale.setlocale(locale.LC_ALL, '')
 
 
 def run_bot():
-    bot.run(TOKEN)
+    bot.run(DISCORD_TOKEN)
 
 
 def main():

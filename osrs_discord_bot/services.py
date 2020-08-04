@@ -16,20 +16,25 @@ Functions:
 
 import string
 import requests
+import time
+import datetime
 from requests.compat import urljoin
 from requests.exceptions import Timeout
 
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdate
 from osrsbox import items_api
 
 import osrs_discord_bot.formatter_discord as f
+from osrs_discord_bot.settings import GE_TRACKER_TOKEN
 from osrs_discord_bot.constants import (
     SKILL_NAMES, WIKI_BASE_URL, WISE_BASE_URL, EXCHANGE_BASE_URL, 
-    HISCORE_BASE_URL
+    HISCORE_BASE_URL, GE_TRACKER_BASE_URL
 )
 
 ALL_DB_ITEMS = items_api.load()
 
-def get_response(base_url, path=None, params=None, timeout=5):
+def get_response(base_url, path=None, params=None, headers=None, timeout=5):
     """Sends a get request to the URL provided.
 
     The request timesout if the reponse takes longer than 5 seconds.
@@ -38,6 +43,7 @@ def get_response(base_url, path=None, params=None, timeout=5):
         base_url (str): Base URL.
         path (str): Path from base URL.
         params (dict): key:value of param:value, defaults to None.
+        headers (dict): header:value, defaults to None.
         timeout (int): Seconds until request is timed out, defaults to 5.
     
     """
@@ -46,7 +52,8 @@ def get_response(base_url, path=None, params=None, timeout=5):
         resp = requests.get(
             urljoin(base_url, path),
             params=params,
-            timeout=timeout
+            timeout=timeout,
+            headers=headers
         )
         return resp
     except Timeout:
@@ -293,5 +300,26 @@ def _parse_ge_response(prices_dict, max_iter_flag):
         ' Please refine the search if the item is not listed.')
     return ge_message_body     
 
-def get_trends():
-    pass
+def get_trend_data(item_id, period='month'):
+    path = f'/api/graph/{item_id}/{period}'
+    headers = {'Authorization' : GE_TRACKER_TOKEN}
+    resp = get_response(GE_TRACKER_BASE_URL, path=path, headers=headers)
+    return resp.json()
+
+# data time is in milliseconds and points are daily
+def parse_trend_data(resp_dict):
+    x = []
+    y = []
+    for i in resp_dict['data']:
+        x.append(datetime.datetime.fromtimestamp(i['ts']/1000))
+        y.append(i['overallPrice'])
+        # print(time.strftime('%Y-%m-%d', time.localtime(i['ts']/1000)),
+        #     i['overallPrice']
+        # )
+    return mdate.date2num(x), y
+
+def plot_graph(x,y):
+    plt.plot_date(x,y, fmt='-')
+    plt.xlabel('Time')
+    plt.ylabel('Price')
+    plt.show()
