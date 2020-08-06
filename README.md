@@ -11,4 +11,4 @@ Small Discord bot that makes calls to the RSBuddy API and Official OSRS HiScore 
 - Get current GE prices for items using RSBuddy GE API.
 - View trends for item prices.
 - View XP tracker results from [Wise Old Man](https://wiseoldman.net).
-- View OSRS Hiscores for a username.
+- Search OSRS Hiscores by username.
