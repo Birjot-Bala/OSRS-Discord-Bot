@@ -29,22 +29,22 @@ class MockAPI:
                 "sp":120001,"buy_average":2864609,"buy_quantity":12,
                 "sell_average":2859858,"sell_quantity":10,
                 "overall_average":2862450,"overall_quantity":22}
-                }
-            )
+            }
+        )
         with open('test/wise_response.json') as json_file:
             wise_response = json.load(json_file)
         self.mock_tracker_url = requests_mock.get(
             'https://wiseoldman.net/api/players/username/test/'
             'gained?period=test',
             json=wise_response
-            )
+        )
         with open('test/hiscore_response.txt') as text_file:
             hiscore_response = text_file.read()
         self.mock_hiscore_url = requests_mock.get(
             'https://secure.runescape.com/m=hiscore_oldschool/'
             'index_lite.ws?player=test_user',
             text=hiscore_response
-            )
+        )
          
 
 @pytest.fixture
