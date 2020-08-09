@@ -8,7 +8,7 @@ Functions:
     search_items
     chance_message
     hiscore_message
-    ge_message
+    price_message
     tracker_message
     wiki_message
     get_trend_data
@@ -192,7 +192,7 @@ def hiscore_message(skill, *args):
     return hiscore_message 
 
 
-def ge_message(*args):
+def price_message(*args):
     """Creates the message response for the ge command.
 
     Args:

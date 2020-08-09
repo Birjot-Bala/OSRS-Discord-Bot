@@ -3,7 +3,7 @@
 Functions:
     on_ready
     hiscore
-    ge
+    price
     wiki
     chance
     tracker
@@ -33,10 +33,10 @@ async def hiscore(ctx, skill, *args):
 
 
 # !ge X posts GE price information of first 10 items that include X
-@bot.command(name='ge', help='Posts GE price of items')
-async def ge(ctx, *args):
-    ge_message = se.ge_message(*args)
-    await ctx.send(ge_message)
+@bot.command(name='price', help='Posts GE price of items')
+async def price(ctx, *args):
+    price_message = se.price_message(*args)
+    await ctx.send(price_message)
      
         
 # !wiki X posts a link to the wiki for X

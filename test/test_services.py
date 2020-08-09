@@ -81,9 +81,9 @@ def test_chance_message(chance, actions, message):
     assert se.chance_message(chance, actions) == message
     
 
-def test_ge_message(mockAPI):
-    ge_message = se.ge_message('Abyssal whip')
-    assert isinstance(ge_message, str) == True
+def test_price_message(mockAPI):
+    price_message = se.price_message('Abyssal whip')
+    assert isinstance(price_message, str) == True
 
 
 def test_tracker_message(mockAPI):
