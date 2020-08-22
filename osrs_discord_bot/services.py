@@ -293,11 +293,11 @@ def _parse_tracker_response(delta_dict):
 
 def _parse_ge_response(prices_dict, max_iter_flag):
     ge_message_body = ""
-    for key in prices_dict:
-        single_item = prices_dict[key]
+    for item_id, item in prices_dict.items():
+        item_info = item["name"] + f' ({item_id})'
         ge_message_body = (ge_message_body + 
-        f'\n{single_item["name"]:<40s}{single_item["buy_price"]:>15n}'
-        f'{single_item["sell_price"]:>15n}{single_item["margin"]:>15n}')
+        f'\n{item_info:<40s}{item["buy_price"]:>15n}'
+        f'{item["sell_price"]:>15n}{item["margin"]:>15n}')
     if max_iter_flag == True:
         ge_message_body = (ge_message_body +
         '\n\nShowing the first 10 results only.'
