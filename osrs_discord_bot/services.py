@@ -83,7 +83,7 @@ def search_price(item_dict):
             buy_price = single_item['buy_average']
             sell_price = single_item['sell_average']
             margin = buy_price - sell_price
-            buy_price, sell_price, margin = f.formatNumbers(
+            buy_price, sell_price, margin = f.format_numbers(
                 buy_price, sell_price, margin
             )
         except KeyError:
@@ -111,7 +111,7 @@ def search_items(query, num):
     counter = 0
     max_iter_flag = False
     for item in ALL_DB_ITEMS:
-        if (f.formatSearch(query) in f.formatSearch(item.name) 
+        if (f.format_search(query) in f.format_search(item.name) 
             and item.tradeable_on_ge == True 
             and item.noted == False 
             and item.placeholder == False
@@ -137,7 +137,7 @@ def chance_message(droprate, actions=None):
     """
 
     if droprate.find('/') != -1:  # if fraction given convert to float
-        droprate = f.fraction2Float(droprate)
+        droprate = f.fraction_to_float(droprate)
 
     try:
         droprate = float(droprate)
@@ -188,7 +188,7 @@ def hiscore_message(skill, *args):
         elif response == 'timeout':
             hiscore_message = 'The request to OSRS Hiscores timed out.'
         else:
-            hiscore_message = f.formatHiscore(username, skill, response.text)
+            hiscore_message = f.format_hiscore(username, skill, response.text)
     return hiscore_message 
 
 
@@ -211,12 +211,12 @@ def price_message(*args):
         if foundItems == {}:
             ge_message = 'No item named' + ' "' + item + '" ' + 'found on GE.'
         else:
-            ge_message_header = f.formatDiscord(
+            ge_message_header = f.format_discord(
                 f'{"Item":<40s}{"Offer Price":>15s}'
                 f'{"Sell Price":>15s}{"Margin":>15s}'
             )
             prices_dict = search_price(foundItems)
-            ge_message_body = f.formatDiscord(
+            ge_message_body = f.format_discord(
                 _parse_ge_response(prices_dict, max_iter_flag)
             )
             ge_message = ge_message_header + ge_message_body
@@ -253,7 +253,7 @@ def tracker_message(period, *args):
             tracker_message = 'No gains in the specified period.'   
         else:
             tracker_message = (f'```{"Skill":<20s}Experience```' 
-                + f.formatDiscord(tracker_message)
+                + f.format_discord(tracker_message)
             )
     return tracker_message
 
@@ -351,5 +351,5 @@ def name_to_id(item_name):
         ]
         if max_items_flag:
             message_dict.append('\nShowing first 10 results.')
-        name_to_id_message = f.formatDiscord('\n'.join(message_dict))
+        name_to_id_message = f.format_discord('\n'.join(message_dict))
         return name_to_id_message
