@@ -1,7 +1,5 @@
 from setuptools import setup
 
-with open('requirements.txt', "r") as f:
-    requirements = f.read().splitlines()
 
 with open("README.md", "r") as f:
     long_description = f.read()
@@ -15,7 +13,13 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/Birjot-Bala/OSRS-Discord-Bot",
     packages=["osrs_discord_bot"],
-    install_requires=requirements,
+    install_requires=[
+        "requests",
+        "matplotlib",
+        "discord.py",
+        "requests-mock",
+        "osrsbox"
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License"

@@ -304,6 +304,7 @@ def _parse_ge_response(prices_dict, max_iter_flag):
         ' Please refine the search if the item is not listed.')
     return ge_message_body     
 
+
 def get_trend_data(item_id, period='month'):
     period_dict = {'week':180, 'month':1440, 'quarter':4320}
     path = f'/exchange/graphs/{period_dict[period]}/{item_id}.json'
@@ -322,6 +323,7 @@ def parse_trend_data(resp_dict):
         # )
     return mdate.date2num(x), y
 
+
 def plot_graph(item_id, x, y):
     item = ALL_DB_ITEMS.lookup_by_item_id(int(item_id))
 
@@ -336,6 +338,7 @@ def plot_graph(item_id, x, y):
     plt.savefig(buf, format='png')
     buf.seek(0)
     return buf
+
 
 def name_to_id(item_name):
     item_dict, max_items_flag = search_items(item_name, 10)
