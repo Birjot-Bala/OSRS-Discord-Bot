@@ -234,27 +234,32 @@ def tracker_message(period, *args):
         String message response to be sent to the client.
     
     """
+
+    periods = ["day", "week", "month", "year"]
     tracker_message = ''
     username = ' '.join(args)
-    delta_response = get_response(
-        WISE_BASE_URL,
-        f'/api/players/username/{username}/gained',
-        params={"period":period}
-    )
-    delta_dict = delta_response.json()
-    if 'message' in delta_dict:
-        tracker_message = (
-            f'Player {username} does not '
-            f'exist on Wise Old Man XP Tracker.'
-        )
+    if period not in periods:
+        tracker_message = f'{period} is not a valid period.'
     else:
-        tracker_message = _parse_tracker_response(delta_dict)
-        if tracker_message == '':
-            tracker_message = 'No gains in the specified period.'   
-        else:
-            tracker_message = (f'```{"Skill":<20s}Experience```' 
-                + f.format_discord(tracker_message)
+        delta_response = get_response(
+            WISE_BASE_URL,
+            f'/api/players/username/{username}/gained',
+            params={"period":period}
+        )
+        delta_dict = delta_response.json()
+        if 'message' in delta_dict:
+            tracker_message = (
+                f'Player {username} does not '
+                f'exist on Wise Old Man XP Tracker.'
             )
+        else:
+            tracker_message = _parse_tracker_response(delta_dict)
+            if tracker_message == '':
+                tracker_message = 'No gains in the specified period.'   
+            else:
+                tracker_message = (f'```{"Skill":<20s}Experience```' 
+                    + f.format_discord(tracker_message)
+                )
     return tracker_message
 
 
