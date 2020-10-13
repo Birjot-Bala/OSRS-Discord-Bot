@@ -332,16 +332,17 @@ def parse_trend_data(resp_dict):
 def plot_graph(item_id, x, y):
     item = ALL_DB_ITEMS.lookup_by_item_id(int(item_id))
 
-    fig, ax = plt.subplots()
-    plt.subplots_adjust(bottom=0.25)
-    plt.plot_date(x,y, fmt='o-')
+    plt.plot_date(x, y, fmt='o-')
     plt.xlabel('Date')
     plt.ylabel('Price')
     plt.title(item.name)
-    ax.xaxis.set_tick_params(rotation=30)
+    plt.xticks(rotation=30)
+    plt.tight_layout()
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)
+    plt.close()
+
     return buf
 
 
