@@ -238,6 +238,7 @@ def tracker_message(period, *args):
     periods = ["day", "week", "month", "year"]
     tracker_message = ''
     username = ' '.join(args)
+    period = period.lower()
     if period not in periods:
         tracker_message = f'{period} is not a valid period.'
     else:
