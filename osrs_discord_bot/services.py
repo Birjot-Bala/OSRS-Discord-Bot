@@ -73,9 +73,9 @@ def search_price_wiki(item_dict):
     """
 
     ge_prices = get_response(
-        WIKI_BASE_URL, 
-        "/latest", 
-        {'User-Agent': f'OSRS_Discord_Bot - ${DISCORD_CONTACT}'}
+        PRICES_WIKI_URL, 
+        "/api/v1/osrs/latest", 
+        headers={'User-Agent': f'OSRS_Discord_Bot - {DISCORD_CONTACT}'}
     )
     ge_prices_dict = ge_prices.json()['data']
     for key in item_dict:

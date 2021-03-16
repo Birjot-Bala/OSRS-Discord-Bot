@@ -4,7 +4,7 @@ EXCHANGE_BASE_URL = 'https://rsbuddy.com'
 WISE_BASE_URL = 'https://wiseoldman.net'
 HISCORE_BASE_URL = 'https://secure.runescape.com'
 WIKI_BASE_URL = 'https://oldschool.runescape.wiki'
-PRICES_WIKI_URL = 'https://prices.runescape.wiki/api/v1/osrs'
+PRICES_WIKI_URL = 'https://prices.runescape.wiki'
 
 SKILL_NAMES = [
       'overall', 'attack', 'defence', 'strength', 'hitpoints',
