@@ -31,6 +31,13 @@ class MockAPI:
                 "overall_average":2862450,"overall_quantity":22}
             }
         )
+        self.mock_wiki_price_url = requests_mock.get(
+            'https://oldschool.runescape.wiki/latest',
+            json={
+                "data":{"4151":{"high":2494002,"highTime":1615934068,
+                "low":2490000,"lowTime":1615934079}
+            }}
+        )
         with open('test/wise_response.json') as json_file:
             wise_response = json.load(json_file)
         self.mock_tracker_url = requests_mock.get(
@@ -61,6 +68,13 @@ def mockAPI(requests_mock):
 def test_search_items(item, result):
     num = 1
     assert se.search_items(item, num) == result
+
+def test_search_price_wiki(mockAPI):
+    test_response = {'4151':{'name':'Abyssal whip', 'buy_price':2494002, 
+        'sell_price':2490000, 'margin':4002}
+    }
+    test_itemDict = se.search_items('Abyssal whip',1)[0]
+    assert se.search_price_wiki(test_itemDict) == test_response
 
 def test_search_price(mockAPI):
     test_Response = {'4151':{'name':'Abyssal whip', 'buy_price':2864609, 
