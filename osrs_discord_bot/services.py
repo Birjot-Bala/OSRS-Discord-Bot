@@ -1,8 +1,5 @@
 """Contains logic for sending requests and output messages.
 
-Classes:
-    ApiRequest
-
 Functions:
     search_price
     search_items
@@ -33,7 +30,7 @@ from osrsbox import items_api
 import osrs_discord_bot.formatter_discord as f
 from osrs_discord_bot.constants import (
     SKILL_NAMES, WIKI_BASE_URL, WISE_BASE_URL, EXCHANGE_BASE_URL, 
-    HISCORE_BASE_URL
+    HISCORE_BASE_URL, PRICES_WIKI_URL
 )
 
 ALL_DB_ITEMS = items_api.load()
@@ -62,6 +59,35 @@ def get_response(base_url, path=None, params=None, headers=None, timeout=5):
         return resp
     except Timeout:
         return 'timeout'
+
+def search_price_wiki(item_dict):
+    """Searches for the prices using the wiki prices API.
+    
+    Args:
+        item_dict (dict): Key, value of item ids, item names.
+
+    Returns: 
+        Dictionary with prices from Wiki Prices API.
+
+    """
+
+    ge_prices = get_response(WIKI_BASE_URL, "/latest")
+    ge_prices_dict = ge_prices.json()['data']
+    for key in item_dict:
+        try:
+            single_item = ge_prices_dict[key]
+            buy_price = single_item['high']
+            sell_price = single_item['low']
+            margin = buy_price - sell_price
+            buy_price, sell_price, margin = f.format_numbers(
+                buy_price, sell_price, margin
+            )
+        except KeyError:
+            buy_price, sell_price, margin = 'N/A', 'N/A', 'N/A'
+        item_dict[key] = {'name':item_dict[key], 'buy_price':buy_price, 
+            'sell_price':sell_price, 'margin':margin
+        }
+    return item_dict
 
 
 def search_price(item_dict):
@@ -324,9 +350,7 @@ def parse_trend_data(resp_dict):
     for i in resp_dict:
         x.append(datetime.datetime.fromtimestamp(i['ts']/1000))
         y.append(i['overallPrice'])
-        # print(time.strftime('%Y-%m-%d', time.localtime(i['ts']/1000)),
-        #     i['overallPrice']
-        # )
+
     return mdate.date2num(x), y
 
 
