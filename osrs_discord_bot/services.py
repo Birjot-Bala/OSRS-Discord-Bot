@@ -32,6 +32,7 @@ from osrs_discord_bot.constants import (
     SKILL_NAMES, WIKI_BASE_URL, WISE_BASE_URL, EXCHANGE_BASE_URL, 
     HISCORE_BASE_URL, PRICES_WIKI_URL
 )
+from osrs_discord_bot.settings import DISCORD_CONTACT
 
 ALL_DB_ITEMS = items_api.load()
 
@@ -71,7 +72,11 @@ def search_price_wiki(item_dict):
 
     """
 
-    ge_prices = get_response(WIKI_BASE_URL, "/latest")
+    ge_prices = get_response(
+        WIKI_BASE_URL, 
+        "/latest", 
+        {'User-Agent': f'OSRS_Discord_Bot - ${DISCORD_CONTACT}'}
+    )
     ge_prices_dict = ge_prices.json()['data']
     for key in item_dict:
         try:
@@ -241,7 +246,7 @@ def price_message(*args):
                 f'{"Item":<40s}{"Offer Price":>15s}'
                 f'{"Sell Price":>15s}{"Margin":>15s}'
             )
-            prices_dict = search_price(foundItems)
+            prices_dict = search_price_wiki(foundItems)
             ge_message_body = f.format_discord(
                 _parse_ge_response(prices_dict, max_iter_flag)
             )
